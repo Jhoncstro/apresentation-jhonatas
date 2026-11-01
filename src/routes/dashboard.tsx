@@ -60,7 +60,7 @@ function Dashboard() {
   }, [sel]);
 
   const s = status(v);
-  const p = patients[sel];
+  const p = patients[sel]!;
   const now = () => new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
   const addIntervention = (txt: string) => setLog((l) => [{ t: now(), who: "Você", txt }, ...l]);
 
