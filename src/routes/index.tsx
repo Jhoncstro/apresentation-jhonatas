@@ -23,9 +23,17 @@ const stats = [
 ];
 
 const pillars = [
-  ["Monitoramento em tempo real", "Sinais vitais conectados que alertam equipes médicas antes de uma crise."],
-  ["Infraestrutura hospitalar", "Leitos inteligentes, telemedicina e centros de dados de saúde em regiões carentes."],
-  ["IA clínica", "Apoio à decisão médica com modelos treinados em dados clínicos brasileiros."],
+  ["Sensoriamento biométrico multicanal", "Sensores de alta precisão que monitoram diferentes parâmetros fisiológicos de forma contínua."],
+  ["Microeletrônica miniaturizada", "Circuitos ultracompactos, materiais flexíveis e conectividade wireless em um único dispositivo vestível."],
+  ["Inteligência artificial", "Análise de tendências fisiológicas que transforma sinais biológicos em dados inteligentes."],
+];
+
+const businessLines = [
+  "Desenvolvimento e comercialização do dispositivo",
+  "Plataforma digital e serviços por assinatura",
+  "Soluções tecnológicas para empresas e instituições",
+  "Parcerias estratégicas em pesquisa e inovação",
+  "Expansão para novos mercados",
 ];
 
 const tiers = [
