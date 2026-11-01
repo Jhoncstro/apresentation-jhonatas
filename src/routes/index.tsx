@@ -84,16 +84,59 @@ function Index() {
       </section>
 
       <section id="tese" className="mx-auto max-w-6xl px-6 py-24">
-        <h2 className="text-3xl font-bold md:text-4xl">Nossa tese de investimento</h2>
-        <p className="mt-3 max-w-2xl text-muted-foreground">O Brasil tem o maior sistema público de saúde do mundo e uma enorme lacuna tecnológica. É aí que atuamos.</p>
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
+        <p className="text-sm font-semibold uppercase tracking-widest text-primary">Nossa tese de investimento</p>
+        <h2 className="mt-3 max-w-3xl text-3xl font-bold md:text-4xl">
+          BioSensor W1 — o futuro do monitoramento humano começa agora.
+        </h2>
+        <p className="mt-4 max-w-2xl text-lg text-muted-foreground">
+          Uma nova geração de tecnologia vestível. Uma nova forma de compreender o corpo humano.
+        </p>
+        <p className="mt-4 max-w-2xl text-muted-foreground">
+          Imagine um dispositivo capaz de acompanhar continuamente diferentes indicadores do organismo, transformar sinais biológicos em dados inteligentes e conectar essas informações a uma plataforma digital integrada. Essa é a proposta do BioSensor W1: uma pulseira biométrica inteligente que combina sensores de alta precisão, microeletrônica miniaturizada, conectividade wireless e inteligência artificial.
+        </p>
+
+        <h3 className="mt-16 text-2xl font-bold">Tecnologia que trabalha em conjunto</h3>
+        <div className="mt-8 grid gap-6 md:grid-cols-3">
           {pillars.map(([t, d], i) => (
             <div key={t} className="rounded-xl border border-border bg-card p-6">
               <div className="mb-6 font-display text-sm text-primary">0{i + 1}</div>
-              <h3 className="text-xl font-semibold">{t}</h3>
+              <h4 className="text-xl font-semibold">{t}</h4>
               <p className="mt-2 text-muted-foreground">{d}</p>
             </div>
           ))}
+        </div>
+
+        <div className="mt-16 grid gap-12 md:grid-cols-2">
+          <div>
+            <h3 className="text-2xl font-bold">Muito além de uma pulseira inteligente</h3>
+            <p className="mt-4 text-muted-foreground">
+              O diferencial do BioSensor W1 está na integração entre hardware e inteligência de dados. Enquanto dispositivos convencionais priorizam indicadores isolados, nossa visão é construir uma plataforma capaz de reunir diferentes informações fisiológicas em um único ecossistema — uma tecnologia pensada para evoluir junto com os avanços da microeletrônica, da inteligência artificial e da saúde digital.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-2xl font-bold">Uma oportunidade de inovação</h3>
+            <p className="mt-4 text-muted-foreground">
+              O mercado de tecnologia vestível representa uma oportunidade para o desenvolvimento de novas soluções de monitoramento e análise de dados pessoais. O BioSensor W1 pretende ocupar esse espaço com uma arquitetura própria, escalável e preparada para incorporar novas tecnologias de sensoriamento. Nossa visão de negócio contempla:
+            </p>
+            <ul className="mt-6 space-y-3">
+              {businessLines.map((b) => (
+                <li key={b} className="flex items-start gap-3 text-muted-foreground">
+                  <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                  {b}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-16 rounded-xl border border-primary/30 bg-card p-8 text-center shadow-glow">
+          <h3 className="text-2xl font-bold">Nossa visão</h3>
+          <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
+            Não queremos apenas desenvolver mais uma pulseira tecnológica. Queremos construir uma plataforma capaz de aproximar o corpo humano da inteligência digital — um ecossistema no qual sensores, microcircuitos, conectividade e inteligência artificial trabalham juntos para oferecer uma compreensão cada vez mais ampla dos padrões fisiológicos humanos.
+          </p>
+          <p className="mt-6 font-display text-lg font-semibold text-primary">
+            Mais do que monitorar. Conectar, compreender e transformar dados em inteligência.
+          </p>
         </div>
       </section>
 
