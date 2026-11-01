@@ -1,24 +1,136 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "VitaNexo — Invista na infraestrutura de saúde do Brasil" },
+      { name: "description", content: "Torne-se acionista de tecnologia e infraestrutura de saúde no Brasil com monitoramento de pacientes em tempo real." },
+      { property: "og:title", content: "VitaNexo — Invista na saúde do Brasil" },
+      { property: "og:description", content: "Captação de recursos para tecnologia e infraestrutura de saúde com impacto real." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
+const stats = [
+  ["R$ 48M", "meta de captação"],
+  ["126", "hospitais parceiros"],
+  ["2,4M", "pacientes atendidos"],
+  ["18%", "crescimento a.a. do setor"],
+];
+
+const pillars = [
+  ["Monitoramento em tempo real", "Sinais vitais conectados que alertam equipes médicas antes de uma crise."],
+  ["Infraestrutura hospitalar", "Leitos inteligentes, telemedicina e centros de dados de saúde em regiões carentes."],
+  ["IA clínica", "Apoio à decisão médica com modelos treinados em dados clínicos brasileiros."],
+];
+
+const tiers = [
+  ["Semente", "R$ 5 mil", "Acesso a relatórios trimestrais e participação acionária proporcional."],
+  ["Crescimento", "R$ 50 mil", "Assento em conselho consultivo e visitas às unidades."],
+  ["Estratégico", "R$ 500 mil+", "Participação direta nas decisões de expansão regional."],
+];
+
 function Index() {
+  const [sent, setSent] = useState(false);
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+          <span className="font-display text-xl font-bold">Vita<span className="text-brand">Nexo</span></span>
+          <nav className="flex items-center gap-6 text-sm text-muted-foreground">
+            <a href="#tese" className="hidden hover:text-foreground sm:inline">Tese</a>
+            <a href="#investir" className="hidden hover:text-foreground sm:inline">Investir</a>
+            <Link to="/dashboard" className="rounded-full bg-brand px-4 py-2 font-semibold text-primary-foreground">Ver plataforma</Link>
+          </nav>
+        </div>
+      </header>
+
+      <section className="bg-hero">
+        <div className="mx-auto max-w-6xl px-6 py-24 md:py-32">
+          <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground">
+            <span className="pulse-dot h-2 w-2 rounded-full bg-primary" /> Rodada Série A aberta
+          </p>
+          <h1 className="max-w-3xl text-4xl font-bold leading-tight md:text-6xl">
+            Seja acionista do futuro da <span className="text-brand">saúde brasileira</span>.
+          </h1>
+          <p className="mt-6 max-w-xl text-lg text-muted-foreground">
+            Investimos em tecnologia e infraestrutura que conectam pacientes, médicos e hospitais em tempo real — salvando vidas e gerando retorno sustentável.
+          </p>
+          <div className="mt-10 flex flex-wrap gap-4">
+            <a href="#investir" className="rounded-full bg-brand px-6 py-3 font-semibold text-primary-foreground shadow-glow">Quero investir</a>
+            <Link to="/dashboard" className="rounded-full border border-border px-6 py-3 font-semibold hover:bg-secondary">Demo do painel do paciente</Link>
+          </div>
+          <div className="mt-20 grid grid-cols-2 gap-6 md:grid-cols-4">
+            {stats.map(([v, l]) => (
+              <div key={l} className="border-l border-primary/40 pl-4">
+                <div className="font-display text-3xl font-bold">{v}</div>
+                <div className="text-sm text-muted-foreground">{l}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="tese" className="mx-auto max-w-6xl px-6 py-24">
+        <h2 className="text-3xl font-bold md:text-4xl">Nossa tese de investimento</h2>
+        <p className="mt-3 max-w-2xl text-muted-foreground">O Brasil tem o maior sistema público de saúde do mundo e uma enorme lacuna tecnológica. É aí que atuamos.</p>
+        <div className="mt-12 grid gap-6 md:grid-cols-3">
+          {pillars.map(([t, d], i) => (
+            <div key={t} className="rounded-xl border border-border bg-card p-6">
+              <div className="mb-6 font-display text-sm text-primary">0{i + 1}</div>
+              <h3 className="text-xl font-semibold">{t}</h3>
+              <p className="mt-2 text-muted-foreground">{d}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section id="investir" className="border-t border-border bg-card/40">
+        <div className="mx-auto grid max-w-6xl gap-12 px-6 py-24 md:grid-cols-2">
+          <div>
+            <h2 className="text-3xl font-bold md:text-4xl">Formas de participação</h2>
+            <div className="mt-8 space-y-4">
+              {tiers.map(([n, v, d]) => (
+                <div key={n} className="rounded-xl border border-border bg-background p-5">
+                  <div className="flex items-baseline justify-between">
+                    <h3 className="font-semibold">{n}</h3>
+                    <span className="font-display text-primary">a partir de {v}</span>
+                  </div>
+                  <p className="mt-1 text-sm text-muted-foreground">{d}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          <form
+            onSubmit={(e) => { e.preventDefault(); setSent(true); }}
+            className="rounded-xl border border-border bg-background p-8 shadow-glow"
+          >
+            <h3 className="text-2xl font-semibold">Manifeste seu interesse</h3>
+            <p className="mt-1 text-sm text-muted-foreground">Nossa equipe de relações com investidores entrará em contato.</p>
+            {sent ? (
+              <p className="mt-8 rounded-lg bg-primary/15 p-4 text-primary">Obrigado! Recebemos seu interesse.</p>
+            ) : (
+              <div className="mt-6 space-y-4">
+                {["Nome completo", "E-mail", "Telefone"].map((p) => (
+                  <input key={p} required placeholder={p} className="w-full rounded-lg border border-input bg-secondary px-4 py-3 outline-none focus:ring-2 focus:ring-ring" />
+                ))}
+                <select className="w-full rounded-lg border border-input bg-secondary px-4 py-3">
+                  {tiers.map(([n]) => <option key={n}>{n}</option>)}
+                </select>
+                <button className="w-full rounded-lg bg-brand py-3 font-semibold text-primary-foreground">Enviar</button>
+              </div>
+            )}
+          </form>
+        </div>
+      </section>
+
+      <footer className="border-t border-border py-8 text-center text-sm text-muted-foreground">
+        © 2026 VitaNexo · Investimentos envolvem riscos. Leia o prospecto antes de investir.
+      </footer>
     </div>
   );
 }
