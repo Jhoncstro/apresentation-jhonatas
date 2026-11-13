@@ -14,13 +14,188 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      operations: {
+        Row: {
+          created_at: string
+          due: string
+          id: string
+          organization_id: string
+          owner: string
+          priority: string
+          status: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          due?: string
+          id?: string
+          organization_id: string
+          owner?: string
+          priority?: string
+          status?: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          due?: string
+          id?: string
+          organization_id?: string
+          owner?: string
+          priority?: string
+          status?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_members: {
+        Row: {
+          created_at: string
+          organization_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          organization_id: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          organization_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_members_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          created_by: string
+          document: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          document?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          document?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+          phone: string | null
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id: string
+          phone?: string | null
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          created_at: string
+          insight_key: string
+          organization_id: string
+          reviewed_by: string
+        }
+        Insert: {
+          created_at?: string
+          insight_key: string
+          organization_id: string
+          reviewed_by?: string
+        }
+        Update: {
+          created_at?: string
+          insight_key?: string
+          organization_id?: string
+          reviewed_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rules: {
+        Row: {
+          code: string
+          enabled: boolean
+          id: string
+          name: string
+          organization_id: string
+        }
+        Insert: {
+          code: string
+          enabled?: boolean
+          id?: string
+          name: string
+          organization_id: string
+        }
+        Update: {
+          code?: string
+          enabled?: boolean
+          id?: string
+          name?: string
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rules_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_member: { Args: { _org: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
