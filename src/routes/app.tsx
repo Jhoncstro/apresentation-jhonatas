@@ -271,7 +271,7 @@ function Login() {
 }
 
 function Onboarding({ session, onDone }: { session: Session; onDone: () => void }) {
-  const [full, setFull] = useState((session.user.user_metadata?.full_name as string) ?? "");
+  const [full, setFull] = useState((session.user.user_metadata?.['full_name'] as string) ?? "");
   const [phone, setPhone] = useState(""); const [company, setCompany] = useState(""); const [doc, setDoc] = useState("");
   const [err, setErr] = useState("");
   const submit = async (e: React.FormEvent) => {
