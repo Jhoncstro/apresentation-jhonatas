@@ -11,3 +11,4 @@
 
 - Personal portfolio pages share a dedicated PortfolioShell; the existing patient dashboard stays independent so portfolio changes do not alter its workflow.
 - Contact requests are downloadable project briefs until a real contact destination is supplied; never imply that a request was sent.
+- Nexo SaaS (/app) is multi-tenant: every data row carries organization_id and RLS checks membership via is_member(); keeps each company's data isolated.
