@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Braces, Database, Workflow, ClipboardCheck } from "lucide-react";
+import { Braces, Database, Workflow, ClipboardCheck, Award } from "lucide-react";
 import { PortfolioShell, pageHead } from "@/components/portfolio-shell";
 import { PortfolioProjects } from "@/components/portfolio-projects";
 import { services } from "@/lib/portfolio-content";
@@ -76,6 +76,26 @@ function Index() {
               </div>
             );
           })}
+        </div>
+      </section>
+      <section className="border-y border-border bg-secondary/50">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-8 px-7 py-12">
+          <div>
+            <Award className="text-primary" />
+            <p className="eyebrow mt-4">FORMAÇÃO GOOGLE · COURSERA</p>
+            <h2 className="mt-3 text-2xl font-semibold">
+              Conhecimento acompanhado de credenciais.
+            </h2>
+            <p className="mt-4 max-w-3xl leading-relaxed text-muted-foreground">
+              Certificado verificável em Introduction to Data Analysis Using Python. Cursos Network
+              Architecture e Foundations of Cybersecurity concluídos.
+            </p>
+          </div>
+          <Button asChild variant="outline" className="rounded-full">
+            <Link to="/sobre" hash="certificacoes">
+              Ver formação e credenciais
+            </Link>
+          </Button>
         </div>
       </section>
       <section className="mx-auto max-w-7xl border-t border-border px-7 py-20">

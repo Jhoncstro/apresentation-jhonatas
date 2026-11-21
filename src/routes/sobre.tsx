@@ -14,18 +14,35 @@ export const Route = createFileRoute("/sobre")({
 const courses = [
   {
     title: "Introduction to Data Analysis Using Python",
-    description: "Estudo de Python aplicado à análise e organização de dados.",
-    url: "https://coursera.org/share/59f62df5b849ed2f90ed6555c84138d2",
+    issuer: "Google · Coursera",
+    status: "Certificado verificável",
+    date: "Concluído em 11 de novembro de 2026 · aproximadamente 27 horas",
+    description:
+      "Python aplicado à análise de dados, estruturas de dados, limpeza e manipulação de dados, NumPy e Pandas.",
+    url: "https://www.coursera.org/account/accomplishments/verify/IMYP0J0UD5UD",
+    linkLabel: "Verificar certificado",
+    note: "Certificado de conclusão do curso emitido em nome de Jhonatas Oliveira.",
   },
   {
-    title: "Google Network Architecture",
-    description: "Estudo de redes, infraestrutura e conectividade.",
-    url: "https://coursera.org/share/256f8d9ae50c9a09555a894aecc74306",
+    title: "Network Architecture",
+    issuer: "Google · Coursera",
+    status: "Curso concluído",
+    date: "Concluído em maio de 2026",
+    description: "Formação complementar em arquitetura de redes, infraestrutura e conectividade.",
+    url: "https://www.coursera.org/learn/google-network-architecture",
+    linkLabel: "Conhecer o curso",
+    note: "Conclusão confirmada na conta Coursera. Certificado verificável emitido não disponível.",
   },
   {
     title: "Foundations of Cybersecurity",
-    description: "Estudo de fundamentos de segurança, riscos e proteção da informação.",
-    url: "https://coursera.org/share/584f8d0c98e41880c2213cd284639f96",
+    issuer: "Google · Coursera",
+    status: "Curso concluído",
+    date: "Concluído em maio de 2026",
+    description:
+      "Formação complementar em fundamentos de cibersegurança, riscos e proteção da informação.",
+    url: "https://www.coursera.org/learn/foundations-of-cybersecurity",
+    linkLabel: "Conhecer o curso",
+    note: "Conclusão confirmada na conta Coursera. Certificado verificável emitido não disponível.",
   },
 ];
 function About() {
@@ -61,26 +78,30 @@ function About() {
           </div>
         </div>
         <PortfolioProjects />
-        <div className="mt-16">
-          <p className="eyebrow">FORMAÇÃO COMPLEMENTAR</p>
-          <h2 className="mt-4 text-3xl font-semibold">Cursos e credenciais</h2>
+        <div id="certificacoes" className="mt-16 scroll-mt-8">
+          <p className="eyebrow">FORMAÇÃO GOOGLE · COURSERA</p>
+          <h2 className="mt-4 text-3xl font-semibold">Certificado e cursos concluídos</h2>
           <p className="mt-4 leading-relaxed text-muted-foreground">
-            Credenciais vinculadas no meu material de apresentação. Consulte os registros para os
-            detalhes de cada curso.
+            Formação conferida nos registros da Coursera. O certificado de Python tem verificação
+            pública; redes e cibersegurança aparecem como cursos concluídos.
           </p>
           <div className="mt-7 grid gap-6 md:grid-cols-3">
             {courses.map((course) => (
               <article key={course.title} className="rounded-2xl border border-border bg-card p-7">
                 <Award className="text-primary" />
+                <p className="mt-4 text-sm font-semibold text-primary">{course.status}</p>
                 <h3 className="mt-5 text-xl font-semibold">{course.title}</h3>
+                <p className="mt-2 text-sm font-semibold">{course.issuer}</p>
+                <p className="mt-3 text-sm text-muted-foreground">{course.date}</p>
                 <p className="mt-4 leading-relaxed text-muted-foreground">{course.description}</p>
+                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{course.note}</p>
                 <a
                   className="cert-link mt-6"
                   href={course.url}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Consultar credencial
+                  {course.linkLabel}
                 </a>
               </article>
             ))}

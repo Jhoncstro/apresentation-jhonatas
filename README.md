@@ -31,7 +31,7 @@ npm run dev
 - O Nexus aponta para o repositório próprio e identifica as permissões de equipes como pendentes de homologação.
 - O BioSensor W1 é uma demonstração com dados fictícios. As rotas existentes `/dashboard` e `/app` permanecem independentes e não foram alteradas nesta revisão.
 - Os links da Workana e do GitHub estão centralizados em `src/lib/portfolio-content.ts`. O formulário de contato só baixa um resumo local; não transmite dados e não afirma enviar mensagens.
-- As credenciais de cursos mantêm os links do material original; esta revisão não certifica sua autenticidade nem publica conquistas sem comprovação adicional.
+- As credenciais Google foram conferidas no Coursera pelo Safari: Introduction to Data Analysis Using Python tem certificado público verificável (11/11/2026, aproximadamente 27 horas). Network Architecture e Foundations of Cybersecurity constam concluídos em maio de 2026, sem certificado emitido disponível; seus botões levam às páginas dos cursos. Não confundir curso concluído com certificado emitido.
 
 ## Validação desta revisão
 
