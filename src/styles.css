@@ -162,3 +162,39 @@
   .header-contact>span { display:none; }
   .hero-skills { display:none; }
 }
+
+/* Readable portfolio typography; clinical and SaaS routes remain independent. */
+.portfolio { font-size: 1rem; line-height: 1.6; }
+.portfolio-header { font-size: 1rem; }
+.portfolio .nav-item, .portfolio .header-contact { font-size: .875rem; }
+.portfolio .availability { font-size: .875rem; }
+.portfolio .hero-role { font-size: .875rem; letter-spacing: .06em; }
+.portfolio .hero-content h1 { font-size: clamp(2.8rem, 4.6vw, 4.5rem); line-height: 1.12; max-width: 900px; }
+.portfolio .hero-description { font-size: 1.125rem; }
+.portfolio .tech-strip-label, .portfolio .eyebrow { font-size: .875rem; letter-spacing: .07em; }
+.portfolio .filter-group button { font-size: .875rem; height: 42px; }
+.portfolio .tech-tag, .portfolio .cert-link { font-size: .875rem; }
+.portfolio .form-label { font-size: .875rem; }
+.portfolio .portfolio-input { font-size: 1rem; }
+.portfolio .project-visual { padding: 25px; border: 1px solid var(--border); cursor: pointer; transition: transform .2s; }
+.portfolio .case-preview { width: 100%; color: var(--foreground); white-space: normal; }
+.portfolio .project-item { min-width: 0; }
+.portfolio .service-block { padding: 1.75rem; border: 1px solid var(--border); border-radius: 16px; background: var(--card); }
+.portfolio select { appearance: none; padding-right: 2.5rem; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23475769' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; }
+.portfolio a:focus-visible, .portfolio button:focus-visible { outline: 3px solid var(--primary); outline-offset: 4px; }
+.portfolio-skip-link { position: absolute; left: 20px; top: -100px; z-index: 80; background: var(--card); padding: 12px 18px; }
+.portfolio-skip-link:focus { top: 20px; }
+@media (max-width: 767px) {
+  .portfolio-header { gap: 12px; }
+  .portfolio .header-contact { width: auto; font-size: .875rem; padding: 0 16px; }
+  .portfolio .hero-content { padding-top: 170px; }
+  .portfolio .hero-role { font-size: .875rem; max-width: 310px; }
+  .portfolio .hero-content h1 { font-size: clamp(2.55rem, 9vw, 3.8rem); }
+  .portfolio .portfolio-hero { height: auto; min-height: 740px; }
+  .portfolio .hero-description { font-size: 1rem; }
+  .portfolio .tech-strip { gap: 16px; }
+  .portfolio .tech-strip-label { width: 100%; font-size: .875rem; }
+  .portfolio .filter-group { width: 100%; }
+  .portfolio .filter-group button { flex: 1; }
+  .portfolio .project-visual { height: 270px; }
+}

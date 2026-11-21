@@ -79,7 +79,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Jhonatas Castro" },
-      { name: "description", content: "Desenvolvimento de software e engenharia de dados." },
+      { name: "description", content: "Python, análise de dados, integração de APIs e aplicações web. Conheça os projetos de Jhonatas Castro." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

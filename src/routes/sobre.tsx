@@ -1,9 +1,107 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowUpRight, Award, BarChart3, Atom, GraduationCap, Code2, Database, Workflow } from "lucide-react";
+import { Award, GraduationCap } from "lucide-react";
 import { PortfolioShell, pageHead } from "@/components/portfolio-shell";
+import { PortfolioProjects } from "@/components/portfolio-projects";
 import { Button } from "@/components/ui/button";
-import studio from "@/assets/studio.jpg";
-export const Route = createFileRoute("/sobre")({ head: () => pageHead("Sobre", "Jhonatas Castro, desenvolvedor e engenheiro de dados. Tecnologia para transformar ideias em projetos."), component: About });
-const certifications = [{ title: "Introduction to Data Analysis Using Python", issuer: "Google · Coursera", detail: "Python aplicado à análise de dados: NumPy, Pandas, estruturas de dados, limpeza e manipulação de dados.", meta: "Concluído em 12 de novembro de 2026 · 27 horas", url: "https://coursera.org/share/59f62df5b849ed2f90ed6555c84138d2" }, { title: "Google Data Analytics Professional Certificate", issuer: "Google · Coursera", detail: "Análise de dados, SQL, planilhas, R, visualização e preparação de dados para apoiar decisões.", meta: "Data de conclusão a confirmar" }, { title: "Google Network Architecture", issuer: "Google · Coursera", detail: "Arquitetura de redes, infraestrutura em nuvem, protocolos e solução de problemas de conectividade.", meta: "Curso concluído", url: "https://coursera.org/share/256f8d9ae50c9a09555a894aecc74306" }, { title: "Foundations of Cybersecurity", issuer: "Google · Coursera", detail: "Fundamentos de segurança da informação, gestão de riscos, ameaças e boas práticas de proteção.", meta: "Curso concluído", url: "https://coursera.org/share/584f8d0c98e41880c2213cd284639f96" }];
-const caseStudies = [{ icon: BarChart3, tag: "Estudo de caso", title: "Google Data Analytics — Capstone", points: ["Estrutura analítica em seis etapas: Perguntar, Preparar, Processar, Analisar, Compartilhar e Agir.", "Limpeza, organização e preparação de dados, análise estatística e identificação de padrões.", "Visualização, construção de painéis e storytelling para comunicar resultados."] }, { icon: Atom, tag: "Kaggle · Medalha Bronze", title: "Google Quantum AI — Verifiable Quantum Circuit Compilation", points: ["Otimização e compilação verificável de circuitos quânticos.", "Exploração de desafios de computação quântica e resolução de problemas computacionais.", "Conquista de medalha Bronze na plataforma Kaggle."] }];
-function About() { return <PortfolioShell><section className="mx-auto max-w-7xl px-7 pb-20 pt-40"><p className="eyebrow">PESSOAS POR TRÁS DA TECNOLOGIA</p><h1 className="mt-5 text-5xl font-semibold">Jhonatas Castro<span className="text-primary">.</span></h1><p className="mt-6 max-w-2xl text-xl leading-relaxed text-muted-foreground">Desenvolvedor & engenheiro de dados. Meu foco é conectar boas ideias à tecnologia certa — com clareza, cuidado e propósito.</p><img src={studio} alt="Ambiente de trabalho ilustrativo com ferramentas de desenvolvimento e análise de dados" width={1920} height={1088} className="mt-12 h-72 w-full rounded-lg object-cover" loading="lazy" /><div className="mt-14 grid gap-10 md:grid-cols-3">{[[Code2, "Desenvolvimento", "Interfaces, aplicações web e sistemas construídos em torno da experiência de quem usa."], [Database, "Engenharia de dados", "Integração, organização e transformação de dados para apoiar decisões mais inteligentes."], [Workflow, "Visão de produto", "Entender o problema, definir prioridades e transformar objetivos em entregas concretas."]].map(([Icon, title, text]) => { const ItemIcon = Icon as typeof Code2; return <div key={String(title)}><ItemIcon className="text-primary" size={24} /><h2 className="mt-5 text-xl font-semibold">{String(title)}</h2><p className="mt-3 leading-relaxed text-muted-foreground">{String(text)}</p></div>; })}</div><div className="mt-16"><p className="eyebrow">PROJETOS E ESTUDOS DE CASO</p><div className="mt-5 grid gap-5 md:grid-cols-2">{caseStudies.map(c => { const I = c.icon; return <div key={c.title} className="rounded-lg border border-border bg-secondary/50 p-7"><div className="flex items-start gap-4"><I className="mt-1 shrink-0 text-primary" size={24} /><div><span className="text-xs uppercase tracking-wider text-primary">{c.tag}</span><h2 className="mt-1 text-lg font-semibold">{c.title}</h2><ul className="mt-3 list-disc space-y-2 pl-5 leading-relaxed text-muted-foreground">{c.points.map(pt => <li key={pt}>{pt}</li>)}</ul></div></div></div>; })}</div><div className="mt-5 flex items-center gap-4 rounded-lg border border-border bg-secondary/50 p-7"><GraduationCap className="shrink-0 text-primary" size={24} /><div><h2 className="text-lg font-semibold">Bacharelado em Ciência da Computação — Estácio</h2><p className="mt-1 text-sm text-muted-foreground">Conclusão prevista: janeiro de 2029</p></div></div></div><div className="mt-16"><p className="eyebrow">CERTIFICAÇÕES</p><div className="mt-5 grid gap-5 md:grid-cols-2">{certifications.map(c => <div key={c.title} className="flex flex-col rounded-lg border border-border bg-secondary/50 p-7"><div className="flex items-start gap-4"><Award className="mt-1 shrink-0 text-primary" size={24} /><div className="flex-1"><h2 className="text-lg font-semibold">{c.title}</h2><p className="mt-1 text-sm text-muted-foreground">{c.issuer}</p><p className="mt-3 leading-relaxed text-muted-foreground">{c.detail}</p><p className="mt-3 text-xs uppercase tracking-wider text-muted-foreground">{c.meta}</p></div></div><div className="mt-auto pt-6">{c.url ? <a className="cert-link" href={c.url} target="_blank" rel="noopener noreferrer">Ver credencial <ArrowUpRight size={14} /></a> : <span className="cert-pending">Credencial ainda não validada</span>}</div></div>)}</div></div><Button asChild className="mt-14 rounded-full"><Link to="/contato">Vamos construir algo juntos <ArrowUpRight /></Link></Button></section></PortfolioShell>; }
+export const Route = createFileRoute("/sobre")({
+  head: () =>
+    pageHead(
+      "Sobre meu trabalho",
+      "Jhonatas Castro, estudante de Ciência da Computação. Projetos próprios, estudo de caso Google Data Analytics e formação em tecnologia.",
+    ),
+  component: About,
+});
+const courses = [
+  {
+    title: "Introduction to Data Analysis Using Python",
+    description: "Estudo de Python aplicado à análise e organização de dados.",
+    url: "https://coursera.org/share/59f62df5b849ed2f90ed6555c84138d2",
+  },
+  {
+    title: "Google Network Architecture",
+    description: "Estudo de redes, infraestrutura e conectividade.",
+    url: "https://coursera.org/share/256f8d9ae50c9a09555a894aecc74306",
+  },
+  {
+    title: "Foundations of Cybersecurity",
+    description: "Estudo de fundamentos de segurança, riscos e proteção da informação.",
+    url: "https://coursera.org/share/584f8d0c98e41880c2213cd284639f96",
+  },
+];
+function About() {
+  return (
+    <PortfolioShell>
+      <section className="mx-auto max-w-7xl px-7 pb-20 pt-40">
+        <p className="eyebrow">SOBRE MEU TRABALHO</p>
+        <h1 className="mt-5 text-5xl font-semibold">
+          Jhonatas Castro<span className="text-primary">.</span>
+        </h1>
+        <p className="mt-6 max-w-3xl text-xl leading-relaxed text-muted-foreground">
+          Sou estudante de Ciência da Computação e desenvolvo projetos próprios e educacionais em
+          software e análise de dados. Meu foco é entender o problema, organizar a informação e
+          construir entregas de escopo claro.
+        </p>
+        <div className="my-12 grid gap-7 md:grid-cols-2">
+          <div className="rounded-2xl border border-border bg-card p-7">
+            <GraduationCap className="text-primary" />
+            <h2 className="mt-4 text-xl font-semibold">Ciência da Computação — Estácio</h2>
+            <p className="mt-3 leading-relaxed text-muted-foreground">
+              Bacharelado em andamento. Conclusão prevista: janeiro de 2029.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-border bg-card p-7">
+            <h2 className="text-xl font-semibold">Uma forma prática de começar</h2>
+            <p className="mt-3 leading-relaxed text-muted-foreground">
+              Um pequeno processo, um conjunto de dados ou uma funcionalidade bem definida.
+              Combinamos o que será entregue e como verificar o resultado.
+            </p>
+            <Button asChild variant="outline" className="mt-5 rounded-full">
+              <Link to="/contato">Apresentar meu desafio</Link>
+            </Button>
+          </div>
+        </div>
+        <PortfolioProjects />
+        <div className="mt-16">
+          <p className="eyebrow">FORMAÇÃO COMPLEMENTAR</p>
+          <h2 className="mt-4 text-3xl font-semibold">Cursos e credenciais</h2>
+          <p className="mt-4 leading-relaxed text-muted-foreground">
+            Credenciais vinculadas no meu material de apresentação. Consulte os registros para os
+            detalhes de cada curso.
+          </p>
+          <div className="mt-7 grid gap-6 md:grid-cols-3">
+            {courses.map((course) => (
+              <article key={course.title} className="rounded-2xl border border-border bg-card p-7">
+                <Award className="text-primary" />
+                <h3 className="mt-5 text-xl font-semibold">{course.title}</h3>
+                <p className="mt-4 leading-relaxed text-muted-foreground">{course.description}</p>
+                <a
+                  className="cert-link mt-6"
+                  href={course.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Consultar credencial
+                </a>
+              </article>
+            ))}
+          </div>
+        </div>
+        <div className="mt-12 rounded-2xl border border-border bg-secondary/50 p-7">
+          <h2 className="text-xl font-semibold">Também exploro desafios computacionais</h2>
+          <p className="mt-3 max-w-3xl leading-relaxed text-muted-foreground">
+            Projeto de estudo sobre compilação verificável de circuitos quânticos, relacionado ao
+            desafio Google Quantum AI no Kaggle.
+          </p>
+          <a
+            className="cert-link mt-5"
+            href="https://github.com/Jhoncstro/google-quantum-circuit-compilation"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Consultar repositório do estudo
+          </a>
+        </div>
+      </section>
+    </PortfolioShell>
+  );
+}
