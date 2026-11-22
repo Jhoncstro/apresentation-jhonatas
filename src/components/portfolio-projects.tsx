@@ -82,13 +82,22 @@ export function PortfolioProjects({ compact = false }: { compact?: boolean }) {
                     </span>
                   ))}
                 </div>
-                <Button
-                  variant="outline"
-                  className="mt-5 rounded-full"
-                  onClick={() => setSelected(project)}
-                >
-                  Ver detalhes
-                </Button>
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <Button
+                    variant="outline"
+                    className="rounded-full"
+                    onClick={() => setSelected(project)}
+                  >
+                    Ver detalhes
+                  </Button>
+                  {"demo" in project && (
+                    <Button asChild className="rounded-full">
+                      <a href={project.demo} target="_blank" rel="noopener noreferrer">
+                        {project.demoLabel}
+                      </a>
+                    </Button>
+                  )}
+                </div>
               </article>
             );
           })}
@@ -129,6 +138,13 @@ export function PortfolioProjects({ compact = false }: { compact?: boolean }) {
                 {selected.note}
               </p>
               <div className="flex flex-wrap gap-3">
+                {"demo" in selected && (
+                  <Button asChild className="rounded-full">
+                    <a href={selected.demo} target="_blank" rel="noopener noreferrer">
+                      {selected.demoLabel}
+                    </a>
+                  </Button>
+                )}
                 <Button asChild variant="outline" className="rounded-full">
                   <a href={selected.source} target="_blank" rel="noopener noreferrer">
                     <FileSearch size={17} />

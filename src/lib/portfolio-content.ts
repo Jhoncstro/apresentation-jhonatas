@@ -62,18 +62,20 @@ export const projects = [
     type: "Projeto próprio em desenvolvimento",
     visual: "workspace",
     description:
-      "Aplicação web para cadastrar empresas, organizar operações, acompanhar indicadores e configurar regras internas de acompanhamento.",
+      "Plataforma de gestão operacional com configuração inicial por setor, porte, módulos e autonomia, acompanhamento de operações e recomendações por regras.",
     points: [
-      "Autenticação de usuários, cadastro e seleção de empresas.",
-      "Operações, indicadores e regras internas em uma interface de gestão.",
-      "Etapa de segurança preparada em branch separada, com 19 testes e build aprovados.",
+      "Smart Setup para ajustar a plataforma ao perfil e às necessidades da empresa.",
+      "Motor de regras com recomendações explicáveis para revisão humana e dashboard adaptativo.",
+      "Autenticação Firebase, cadastro de empresas e dados separados por empresa.",
     ],
     application:
-      "Demonstra organização de funcionalidades de gestão e cuidados com sessão, consultas e alterações de dados.",
-    note: "As permissões de equipes e a proposta de RLS multiempresa ainda dependem de aplicação e validação em homologação. Não é apresentada como uma solução já implantada em clientes.",
-    tags: ["React", "TypeScript", "Supabase"],
+      "Demonstra a organização de fluxos de gestão, configuração empresarial e acompanhamento de prazos e prioridades.",
+    note: "Projeto próprio em desenvolvimento, com acesso público à plataforma. A autonomia disponível é manual ou assistida, sem execução automática de ações. Não é apresentado como uma solução já implantada em clientes.",
+    tags: ["React", "TypeScript", "Firebase"],
     source: "https://github.com/Jhoncstro/nexo-ops-insight",
     sourceLabel: "Ver código no GitHub",
+    demo: "https://project-c1bb5150-c01e-4305-9c7.web.app",
+    demoLabel: "Abrir Nexus",
   },
   {
     name: "BioSensor W1",
