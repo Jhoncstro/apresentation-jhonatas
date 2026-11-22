@@ -12,3 +12,5 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+Sitemap: https://jhonatas-castro-portfolio.web.app/sitemap.xml
