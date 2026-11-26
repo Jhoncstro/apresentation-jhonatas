@@ -1,6 +1,12 @@
 export const WORKANA_PROFILE =
   "https://www.workana.com/freelancer/10802ef5f9040e62df944206ccc521af";
 export const GITHUB_PROFILE = "https://github.com/Jhoncstro";
+export const WHATSAPP_NUMBER = "5592993563793";
+export const WHATSAPP_DISPLAY = "(92) 99356-3793";
+export const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}`;
+export const LINKEDIN_PROFILE = "https://www.linkedin.com/in/jhonata-c-7b4815142";
+export const CONTACT_EMAIL = "jhonatascastro32@gmail.com";
+export const EMAIL_LINK = `mailto:${CONTACT_EMAIL}`;
 export const analysisSteps = [
   "Perguntar",
   "Preparar",

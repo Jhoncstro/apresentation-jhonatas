@@ -21,7 +21,14 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 import { PortfolioProjects } from "@/components/portfolio-projects";
 import { Contact } from "@/routes/contato";
-import { WORKANA_PROFILE } from "@/lib/portfolio-content";
+import {
+  CONTACT_EMAIL,
+  EMAIL_LINK,
+  LINKEDIN_PROFILE,
+  WHATSAPP_DISPLAY,
+  WHATSAPP_LINK,
+  WORKANA_PROFILE,
+} from "@/lib/portfolio-content";
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
@@ -65,18 +72,24 @@ describe("Portfolio interactions", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: "Close" }));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
-  it("offers a real contact destination and downloads a local brief without sending it", () => {
+  it("offers real contact destinations and prepares a contact request via WhatsApp or email", () => {
     const network = vi.fn();
     vi.stubGlobal("fetch", network);
-    const create = vi.fn(() => "blob:brief");
-    Object.defineProperty(URL, "createObjectURL", { value: create, configurable: true });
-    Object.defineProperty(URL, "revokeObjectURL", { value: vi.fn(), configurable: true });
-    const download = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    const openSpy = vi.spyOn(window, "open").mockImplementation(() => null);
     render(<Contact />);
     expect(screen.getByRole("link", { name: "Abrir meu perfil na Workana" })).toHaveAttribute(
       "href",
       WORKANA_PROFILE,
     );
+    expect(screen.getByRole("link", { name: `WhatsApp ${WHATSAPP_DISPLAY}` })).toHaveAttribute(
+      "href",
+      WHATSAPP_LINK,
+    );
+    expect(screen.getByRole("link", { name: "LinkedIn" })).toHaveAttribute(
+      "href",
+      LINKEDIN_PROFILE,
+    );
+    expect(screen.getByRole("link", { name: CONTACT_EMAIL })).toHaveAttribute("href", EMAIL_LINK);
     fireEvent.change(screen.getByLabelText("Qual tarefa ou problema precisa resolver?"), {
       target: { value: "Organizar planilhas" },
     });
@@ -86,10 +99,19 @@ describe("Portfolio interactions", () => {
     fireEvent.change(screen.getByLabelText("Como seria uma entrega bem-sucedida?"), {
       target: { value: "Uma base limpa" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Baixar resumo do projeto" }));
-    expect(create).toHaveBeenCalledWith(expect.any(Blob));
-    expect(download).toHaveBeenCalledOnce();
-    expect(screen.getByRole("status")).toHaveTextContent("Nenhuma mensagem foi enviada");
+    fireEvent.click(screen.getByRole("button", { name: "Solicitar contato" }));
+    expect(openSpy).toHaveBeenCalledWith(
+      expect.stringContaining(`${WHATSAPP_LINK}?text=`),
+      "_blank",
+      "noopener,noreferrer",
+    );
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Solicitação preparada para envio via WhatsApp",
+    );
+    expect(screen.getByRole("link", { name: "envie por e-mail" })).toHaveAttribute(
+      "href",
+      expect.stringContaining(EMAIL_LINK),
+    );
     expect(network).not.toHaveBeenCalled();
   });
 });
