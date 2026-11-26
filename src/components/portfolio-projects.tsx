@@ -55,22 +55,38 @@ export function PortfolioProjects({ compact = false }: { compact?: boolean }) {
               <article key={project.name} className="project-item">
                 <button
                   type="button"
-                  className={`project-visual ${project.visual}`}
+                  className={`project-visual ${project.visual}${project.visual === "workspace" ? " nexus-visual" : ""}`}
                   onClick={() => setSelected(project)}
                   aria-label={`Ver projeto ${project.name}`}
                 >
-                  <div className="case-preview">
-                    <Icon size={28} />
-                    <span className="mt-6 block text-sm font-medium">{project.type}</span>
-                    <strong className="mt-3 block text-2xl leading-snug">{project.name}</strong>
-                    <span className="mt-5 block text-sm leading-relaxed">
-                      {project.visual === "data"
-                        ? "Pergunta de negócio · Dados organizados · Conclusões"
-                        : project.visual === "workspace"
-                          ? "Empresas · Operações · Indicadores"
+                  {project.visual === "workspace" ? (
+                    <>
+                      <img
+                        className="nexus-project-image"
+                        src="/images/nexus-workspace.jpg"
+                        alt="Visão geral do Nexus com filtro por fonte de dados"
+                        width={1280}
+                        height={720}
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <div className="nexus-project-caption">
+                        <span className="block text-xs font-medium">APLICAÇÃO PUBLICADA</span>
+                        <strong className="mt-2 block text-2xl">Nexus Workspace</strong>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="case-preview">
+                      <Icon size={28} />
+                      <span className="mt-6 block text-sm font-medium">{project.type}</span>
+                      <strong className="mt-3 block text-2xl leading-snug">{project.name}</strong>
+                      <span className="mt-5 block text-sm leading-relaxed">
+                        {project.visual === "data"
+                          ? "Pergunta de negócio · Dados organizados · Conclusões"
                           : "Prototipação · Componentes · Navegação"}
-                    </span>
-                  </div>
+                      </span>
+                    </div>
+                  )}
                 </button>
                 <p className="mt-5 text-sm text-muted-foreground">{project.label}</p>
                 <h3 className="mt-2 text-xl font-semibold">{project.name}</h3>
@@ -118,6 +134,20 @@ export function PortfolioProjects({ compact = false }: { compact?: boolean }) {
                   {selected.description}
                 </DialogDescription>
               </DialogHeader>
+              {selected.visual === "workspace" && (
+                <figure className="mt-2 space-y-2">
+                  <img
+                    src="/images/nexus-workspace.jpg"
+                    alt="Painel publicado do Nexus Workspace com filtro por fonte, indicadores e gráficos"
+                    width={1280}
+                    height={720}
+                    className="w-full rounded-lg border border-border"
+                  />
+                  <figcaption className="text-xs text-muted-foreground">
+                    Imagem da plataforma publicada com dados fictícios.
+                  </figcaption>
+                </figure>
+              )}
               {selected.visual === "data" && (
                 <div className="mt-2 flex flex-wrap gap-2" aria-label="Etapas da análise">
                   {analysisSteps.map((step) => (
@@ -145,12 +175,14 @@ export function PortfolioProjects({ compact = false }: { compact?: boolean }) {
                     </a>
                   </Button>
                 )}
-                <Button asChild variant="outline" className="rounded-full">
-                  <a href={selected.source} target="_blank" rel="noopener noreferrer">
-                    <FileSearch size={17} />
-                    {selected.sourceLabel}
-                  </a>
-                </Button>
+                {selected.source && (
+                  <Button asChild variant="outline" className="rounded-full">
+                    <a href={selected.source} target="_blank" rel="noopener noreferrer">
+                      <FileSearch size={17} />
+                      {selected.sourceLabel}
+                    </a>
+                  </Button>
+                )}
                 <Button asChild className="rounded-full">
                   <Link to="/contato">Conversar sobre meu projeto</Link>
                 </Button>

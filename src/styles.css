@@ -198,3 +198,8 @@
   .portfolio .filter-group button { flex: 1; }
   .portfolio .project-visual { height: 270px; }
 }
+
+.portfolio .nexus-visual { padding: 0; background: #081321; isolation: isolate; }
+.portfolio .nexus-project-image { width: 100%; height: 100%; object-fit: cover; object-position: left top; opacity: .9; transition: transform .3s ease; }
+.portfolio .nexus-visual:hover .nexus-project-image { transform: scale(1.025); }
+.portfolio .nexus-project-caption { position: absolute; inset: auto 0 0; padding: 34px 22px 20px; background: linear-gradient(transparent, rgba(5, 12, 22, .96)); color: #eef7ff; }

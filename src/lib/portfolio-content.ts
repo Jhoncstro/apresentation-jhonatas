@@ -35,6 +35,30 @@ export const services = [
 
 export const projects = [
   {
+    name: "Nexus Workspace",
+    category: "Desenvolvimento",
+    label: "Dados, operação e financeiro conectados",
+    type: "Aplicação publicada e em evolução",
+    visual: "workspace",
+    description:
+      "Plataforma de gestão que transforma arquivos CSV e Excel em dados organizados, gráficos, indicadores e alertas. Conecta vendas ao resumo financeiro e permite analisar cada fonte ou a empresa inteira.",
+    points: [
+      "Importação automática de CSV e Excel, reconhecimento de campos e persistência no Firestore.",
+      "Painel com gráficos, indicadores, atividade recente e filtro por fonte de dados.",
+      "Vendas conectadas ao financeiro, às previsões a receber e aos alertas de vencimento.",
+      "Autenticação Firebase e acesso aos dados organizado por empresa e papel do usuário.",
+      "Atualização pelos mesmos identificadores e arquivamento automático de registros ausentes após uma importação concluída.",
+    ],
+    application:
+      "Demonstra um fluxo completo entre entrada de arquivos, armazenamento e análise operacional, com testes de importação, cálculos financeiros e isolamento entre empresas.",
+    note: "Projeto próprio publicado e em evolução. A imagem apresenta dados fictícios. A área de gestão requer cadastro ou login. O código-fonte atual é mantido em repositório privado.",
+    tags: ["React", "TypeScript", "Firebase", "Firestore", "Automação"],
+    source: "",
+    sourceLabel: "",
+    demo: "https://project-c1bb5150-c01e-4305-9c7.web.app/",
+    demoLabel: "Abrir Nexus",
+  },
+  {
     name: "Google Data Analytics — Capstone",
     category: "Análise de dados",
     label: "Organização de dados e raciocínio analítico",
@@ -54,28 +78,6 @@ export const projects = [
     source:
       "https://github.com/Jhoncstro/apresentation-jhonatas/blob/8b9100a1ced887574f6372e6924bea73ae33d5f5/src/routes/sobre.tsx",
     sourceLabel: "Consultar descrição original",
-  },
-  {
-    name: "Nexus Workspace",
-    category: "Desenvolvimento",
-    label: "Gestão operacional para empresas",
-    type: "Projeto próprio em desenvolvimento",
-    visual: "workspace",
-    description:
-      "Plataforma de gestão operacional com configuração inicial por setor, porte, módulos e autonomia, acompanhamento de operações e recomendações por regras.",
-    points: [
-      "Smart Setup para ajustar a plataforma ao perfil e às necessidades da empresa.",
-      "Motor de regras com recomendações explicáveis para revisão humana e dashboard adaptativo.",
-      "Autenticação Firebase, cadastro de empresas e dados separados por empresa.",
-    ],
-    application:
-      "Demonstra a organização de fluxos de gestão, configuração empresarial e acompanhamento de prazos e prioridades.",
-    note: "Projeto próprio em desenvolvimento, com acesso público à plataforma. A autonomia disponível é manual ou assistida, sem execução automática de ações. Não é apresentado como uma solução já implantada em clientes.",
-    tags: ["React", "TypeScript", "Firebase"],
-    source: "https://github.com/Jhoncstro/nexo-ops-insight",
-    sourceLabel: "Ver código no GitHub",
-    demo: "https://project-c1bb5150-c01e-4305-9c7.web.app",
-    demoLabel: "Abrir Nexus",
   },
   {
     name: "BioSensor W1",

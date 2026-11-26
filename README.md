@@ -53,3 +53,7 @@ A integração GitHub do projeto do portfólio no Lovable foi desconectada em 22
 ## Validação da migração
 
 Quatro testes existentes, TypeScript, build e verificação do artefato estático passaram. As quatro páginas públicas foram pré-renderizadas e verificadas por HTTP; navegação de projetos e contato foi conferida no navegador. Auditoria das dependências de produção: zero vulnerabilidades conhecidas; Zod atualizado para 4.6.7. Persistem avisos moderados em ferramentas de desenvolvimento. O workflow GitHub Actions valida instalação, tipos, testes, build e saída estática; a publicação continua sendo um comando explícito, com a sessão Firebase autorizada.
+
+## Nexus Workspace atualizado em 26/11/2026
+
+O estudo de caso apresenta a aplicação Firebase atual: importação automática CSV/XLSX, análise por fonte, indicadores, resumo financeiro conectado às vendas e alertas de vencimento. A imagem usa dados fictícios. O link público abre a plataforma; a área de gestão exige cadastro/login. O código-fonte atual do Nexus permanece privado. A atualização não altera o site, os dados ou as regras do Nexus.

@@ -28,6 +28,20 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 describe("Portfolio interactions", () => {
+  it("apresenta o Nexus atual com imagem, importação automática e acesso à plataforma publicada", () => {
+    render(<PortfolioProjects />);
+    fireEvent.click(screen.getByRole("button", { name: "Ver projeto Nexus Workspace" }));
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText(/Importação automática de CSV e Excel/)).toBeInTheDocument();
+    expect(within(dialog).getByRole("img")).toHaveAttribute("src", "/images/nexus-workspace.jpg");
+    expect(within(dialog).getByRole("link", { name: "Abrir Nexus" })).toHaveAttribute(
+      "href",
+      "https://project-c1bb5150-c01e-4305-9c7.web.app/",
+    );
+    expect(within(dialog).getByText(/repositório privado/)).toBeInTheDocument();
+    expect(within(dialog).queryByRole("link", { name: /Ver código/ })).not.toBeInTheDocument();
+  });
+
   it("filters to the educational data case and restores development projects", () => {
     render(<PortfolioProjects />);
     fireEvent.click(screen.getByRole("button", { name: "Análise de dados" }));
