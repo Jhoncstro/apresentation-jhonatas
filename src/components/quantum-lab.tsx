@@ -428,7 +428,7 @@ export function QuantumLab() {
   async function exportVault() {
     const snap = latest.current;
     if (!snap) return;
-    const files = buildVault(runName, snap);
+    const files = buildVault(runName, snap, runId.current);
     try {
       if (canWriteVault()) {
         const count = await writeVault(files);

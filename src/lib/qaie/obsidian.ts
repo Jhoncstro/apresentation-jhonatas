@@ -68,9 +68,18 @@ ${node.circuit ? `\n## Circuito\n\`\`\`qasm\n${toQasm(node.circuit)}\`\`\`\n` : 
 }
 
 /** Builds an Obsidian-compatible vault folder for one run (Markdown + YAML front matter + wiki links). */
-export function buildVault(runName: string, snapshot: EngineSnapshot): VaultFile[] {
-  const safe = runName.replace(/[\\/:*?"<>|#^[\]]/g, "-").trim() || "execucao";
-  const base = `QAIE/${safe}`;
+/** File/folder name safe for vaults and ZIP extraction: no separators, no dot segments. */
+export function safeSegment(value: string, fallback: string): string {
+  const cleaned = value
+    .replace(/[^\p{L}\p{N} _.-]/gu, "-")
+    .replace(/^[.\s]+|[.\s]+$/g, "")
+    .slice(0, 80);
+  return cleaned || fallback;
+}
+
+export function buildVault(runName: string, snapshot: EngineSnapshot, runId = ""): VaultFile[] {
+  const folder = safeSegment(runName, "execucao");
+  const base = `QAIE/${runId ? `${folder} · ${safeSegment(runId, "execucao")}` : folder}`;
   const best = snapshot.nodes.find((n) => n.id === snapshot.bestId);
   const bestElite = snapshot.elites.find((e) => e.nodeId === snapshot.bestId);
   const stats = Object.entries(snapshot.stats)
@@ -136,7 +145,7 @@ ${stats}
       content: `# Configuração\n\n\`\`\`json\n${JSON.stringify(snapshot.config, null, 2)}\n\`\`\`\n`,
     },
     ...snapshot.nodes.map((n) => ({
-      path: `${base}/Candidatos/${n.id}.md`,
+      path: `${base}/Candidatos/${safeSegment(n.id, "candidato")}.md`,
       content: nodeNote(runName, n, snapshot),
     })),
   ];

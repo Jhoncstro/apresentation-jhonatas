@@ -20,6 +20,10 @@ describe("QAIE circuit I/O", () => {
     expect(() => parseQasm("qreg q[1];\nU(alert(1),0,0) q[0];")).toThrow();
     expect(() => parseQasm("qreg q[1];\ncx q[0],q[0];")).toThrow();
     expect(() => parseQasm("qreg q[1];\nrz(pi) q[3];")).toThrow();
+    expect(() => parseQasm("qreg q[1];\ncreg c[1];\nmeasure q[0] -> c[0];\nh q[0];")).toThrow(
+      /intermediária/,
+    );
+    expect(parseQasm("qreg q[2];\ncreg c[2];\nh q[0];\nmeasure q -> c;").gates).toHaveLength(1);
   });
 });
 
@@ -161,6 +165,13 @@ describe("QAIE memory export", () => {
     expect(files.some((f) => f.path === `QAIE/Teste/Candidatos/${engine.best.node.id}.md`)).toBe(
       true,
     );
+    const hostile = engine.snapshot();
+    hostile.nodes[1] = { ...(hostile.nodes[1] ?? hostile.nodes[0]!), id: "../../.obsidian/x" };
+    const hostileFiles = buildVault("../evil", hostile, "run-1");
+    expect(
+      hostileFiles.every((f) => f.path.startsWith("QAIE/") && !f.path.split("/").includes("..")),
+    ).toBe(true);
+    expect(hostileFiles[0]?.path).toBe("QAIE/-evil · run-1/Índice.md");
     const zip = createZip(files);
     const view = new DataView(zip.buffer);
     expect(view.getUint32(0, true)).toBe(0x04034b50);
