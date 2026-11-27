@@ -292,6 +292,13 @@ export function QuantumLab() {
     setStatus("parado");
   };
 
+  /** Cancel terminates the workers at once, even mid-iteration; the last reported state is kept. */
+  const cancelRun = () => {
+    detachWorkers();
+    if (latest.current) void persist(latest.current, true);
+    setMessage("Cancelado pelo usuário: workers encerrados; o último estado recebido foi salvo.");
+  };
+
   const broadcast = (request: WorkerRequest) =>
     workers.current.forEach((w) => w.postMessage(request));
   const sendHub = (request: WorkerRequest) => workers.current[0]?.postMessage(request);
@@ -639,11 +646,7 @@ export function QuantumLab() {
               </Button>
             )}
             {status !== "parado" && (
-              <Button
-                variant="outline"
-                className="rounded-full"
-                onClick={() => broadcast({ type: "stop" })}
-              >
+              <Button variant="outline" className="rounded-full" onClick={cancelRun}>
                 <Square /> Cancelar
               </Button>
             )}
