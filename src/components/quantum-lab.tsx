@@ -247,7 +247,7 @@ export function QuantumLab() {
           `${data.reason} Verificação final do melhor (hub): ${data.finalCheck?.equivalent ? "equivalente" : "NÃO equivalente"} (${data.finalCheck?.detail}).`,
         );
         void persist(data.snapshot, true);
-      } else if (Date.now() - lastSaved.current > AUTOSAVE_MS) {
+      } else if (!data.running || Date.now() - lastSaved.current > AUTOSAVE_MS) {
         void persist(data.snapshot, true);
       }
     }
