@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as ContatoRouteImport } from './routes/contato'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as LaboratorioQuanticoRouteImport } from './routes/laboratorio-quantico'
 import { Route as ProjetosRouteImport } from './routes/projetos'
 import { Route as SobreRouteImport } from './routes/sobre'
 
@@ -36,6 +37,11 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LaboratorioQuanticoRoute = LaboratorioQuanticoRouteImport.update({
+  id: '/laboratorio-quantico',
+  path: '/laboratorio-quantico',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProjetosRoute = ProjetosRouteImport.update({
   id: '/projetos',
   path: '/projetos',
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRoute
   '/contato': typeof ContatoRoute
   '/dashboard': typeof DashboardRoute
+  '/laboratorio-quantico': typeof LaboratorioQuanticoRoute
   '/projetos': typeof ProjetosRoute
   '/sobre': typeof SobreRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppRoute
   '/contato': typeof ContatoRoute
   '/dashboard': typeof DashboardRoute
+  '/laboratorio-quantico': typeof LaboratorioQuanticoRoute
   '/projetos': typeof ProjetosRoute
   '/sobre': typeof SobreRoute
 }
@@ -69,20 +77,36 @@ export interface FileRoutesById {
   '/app': typeof AppRoute
   '/contato': typeof ContatoRoute
   '/dashboard': typeof DashboardRoute
+  '/laboratorio-quantico': typeof LaboratorioQuanticoRoute
   '/projetos': typeof ProjetosRoute
   '/sobre': typeof SobreRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/contato' | '/dashboard' | '/projetos' | '/sobre'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/contato'
+    | '/dashboard'
+    | '/laboratorio-quantico'
+    | '/projetos'
+    | '/sobre'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app' | '/contato' | '/dashboard' | '/projetos' | '/sobre'
+  to:
+    | '/'
+    | '/app'
+    | '/contato'
+    | '/dashboard'
+    | '/laboratorio-quantico'
+    | '/projetos'
+    | '/sobre'
   id:
     | '__root__'
     | '/'
     | '/app'
     | '/contato'
     | '/dashboard'
+    | '/laboratorio-quantico'
     | '/projetos'
     | '/sobre'
   fileRoutesById: FileRoutesById
@@ -92,6 +116,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRoute
   ContatoRoute: typeof ContatoRoute
   DashboardRoute: typeof DashboardRoute
+  LaboratorioQuanticoRoute: typeof LaboratorioQuanticoRoute
   ProjetosRoute: typeof ProjetosRoute
   SobreRoute: typeof SobreRoute
 }
@@ -126,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/laboratorio-quantico': {
+      id: '/laboratorio-quantico'
+      path: '/laboratorio-quantico'
+      fullPath: '/laboratorio-quantico'
+      preLoaderRoute: typeof LaboratorioQuanticoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/projetos': {
       id: '/projetos'
       path: '/projetos'
@@ -148,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRoute,
   ContatoRoute: ContatoRoute,
   DashboardRoute: DashboardRoute,
+  LaboratorioQuanticoRoute: LaboratorioQuanticoRoute,
   ProjetosRoute: ProjetosRoute,
   SobreRoute: SobreRoute,
 }

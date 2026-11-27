@@ -20,6 +20,7 @@ const publicPages = [
   ["/projetos", "projetos/index.html", "Nexus Workspace"],
   ["/sobre", "sobre/index.html", "Jhonatas"],
   ["/contato", "contato/index.html", "Prepare seu pedido"],
+  ["/laboratorio-quantico", "laboratorio-quantico/index.html", "Laboratório quântico"],
 ];
 
 const exists = (file) =>

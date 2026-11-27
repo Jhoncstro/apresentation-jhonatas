@@ -35,10 +35,28 @@ O build usa Vite, React e TanStack padrão, com páginas públicas pré-renderiz
 - `src/components/portfolio-shell.tsx`: navegação e rodapé compartilhados pelas páginas públicas.
 - `src/routes/contato.tsx`: página de contato e download do resumo do projeto.
 - `src/routes/sobre.tsx`: formação e credenciais.
+- `src/routes/laboratorio-quantico.tsx` e `src/components/quantum-lab.tsx`: Laboratório quântico (QAIE), descrito abaixo.
 
 Use apenas contatos e links fornecidos ou verificados. O contato atual abre a Workana; o formulário baixa um briefing local no navegador e não envia mensagens nem recebe pagamentos. Acrescentar links de contato não exige backend; receber formulários ou enviar e-mails exigirá uma implementação própria, com validação e proteção contra abuso.
 
 O Nexus mantém o link público [Abrir Nexus](https://project-c1bb5150-c01e-4305-9c7.web.app) e o repositório do código. O Google Data Analytics — Capstone é um estudo educacional, sem vínculo empregatício com o Google. O certificado de Introduction to Data Analysis Using Python é verificável; Network Architecture e Foundations of Cybersecurity constam como cursos concluídos, sem certificado emitido disponível. O BioSensor W1 é uma demonstração com dados fictícios.
+
+## Laboratório quântico (QAIE + CEE)
+
+A rota `/laboratorio-quantico` otimiza circuitos quânticos inteiramente no navegador do visitante, dentro de um Web Worker. Não há servidor nem dados enviados para fora do navegador. O código fica em `src/lib/qaie/`:
+
+| Arquivo                    | Função                                                                                                                                                                                                                                                                                                                                               |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `circuit.ts`, `qasm.ts`    | Modelo de circuito; importação/exportação OpenQASM 2 e JSON (até 64 qubits e 200.000 portas; sem `gate`, `if`, `reset`)                                                                                                                                                                                                                              |
+| `metrics.ts`               | Portas, T-count, T-depth, profundidade, portas de 2+ qubits, rotações arbitrárias, qubits ativos; custo ponderado normalizado pelo original (= 1); fronteira de Pareto                                                                                                                                                                               |
+| `simulate.ts`, `verify.ts` | Simulação por vetor de estado; equivalência a menos de fase global: exata (todas as colunas) até 8 qubits, estados aleatórios de 9 a 20, rejeição acima disso                                                                                                                                                                                        |
+| `rewrite.ts`               | Reescritas exatas: cancelamento de inversos, fusão de rotações, comutação, conjugação por Hadamard, inversão de CNOT, CZ↔CX, decomposição de SWAP                                                                                                                                                                                                    |
+| `engine.ts`                | Ciclo adaptativo: bandit UCB1 escolhe entre descida gulosa, simulated annealing, beam search e recombinação evolutiva; melhor global monotônico; detecção de estagnação com reajuste de parâmetros                                                                                                                                                   |
+| `engine.ts` (CEE)          | Genealogia com pais, transformações e evidência de verificação; elites como linhagens; recombinação reaplica transformações de outra linhagem e reavalia o circuito resultante (pontuações nunca são somadas); interações positivas/negativas; reaproveitamento de transformações parciais revalidadas uma a uma; recuperação de gerações anteriores |
+| `storage.ts`               | Execuções e checkpoints no IndexedDB (até 20 por execução)                                                                                                                                                                                                                                                                                           |
+| `obsidian.ts`, `zip.ts`    | Notas Markdown com front matter e wiki links; gravação direta no Vault (Chrome/Edge) ou download em ZIP                                                                                                                                                                                                                                              |
+
+Limites: o custo exibido é local e não é pontuação oficial de competição. Não há Python, Qiskit, Cirq, ZX-calculus, QSP/QSVT nem síntese numérica; métodos como CMA-ES, Bayesian Optimization e MCTS ainda não estão implementados. A importação aceita apenas OpenQASM 2 e JSON. Testes em `src/test/qaie.test.ts`.
 
 ## Limite desta migração
 

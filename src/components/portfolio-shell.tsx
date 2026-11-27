@@ -28,6 +28,7 @@ export function PortfolioShell({ children }: { children: ReactNode }) {
               { to: "/", label: "Início" },
               { to: "/projetos", label: "Projetos" },
               { to: "/sobre", label: "Sobre" },
+              { to: "/laboratorio-quantico", label: "Laboratório" },
             ] as const
           ).map((item) => (
             <Link
