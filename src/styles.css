@@ -903,3 +903,40 @@
   background: linear-gradient(transparent, rgba(5, 12, 22, 0.96));
   color: #eef7ff;
 }
+
+/* Lightweight live laboratory graph; motion follows the worker state. */
+.qaie-graph-node:focus {
+  outline: none;
+}
+.qaie-graph-node:focus-visible circle:last-child {
+  stroke: white;
+  stroke-width: 2;
+}
+.qaie-graph[data-running="true"] .qaie-worker-active .qaie-worker-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: qaie-pulse 1.8s ease-out infinite;
+}
+.qaie-graph[data-running="true"] .qaie-worker-active .qaie-worker-link {
+  animation: qaie-flow 2s linear infinite;
+}
+@keyframes qaie-pulse {
+  from {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  to {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+@keyframes qaie-flow {
+  to {
+    stroke-dashoffset: -44;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .qaie-graph * {
+    animation: none !important;
+  }
+}

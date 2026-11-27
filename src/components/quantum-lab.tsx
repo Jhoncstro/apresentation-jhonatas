@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { DistributedCenter, type IslandState } from "@/components/distributed-center";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { QuantumGraph } from "@/components/quantum-graph";
 import { type Circuit, circuitHash } from "@/lib/qaie/circuit";
 import { ENGINE_VERSION, createCheckpoint, readCheckpoint } from "@/lib/qaie/checkpoint";
 import {
@@ -87,7 +89,7 @@ function Panel({
   className?: string;
 }) {
   return (
-    <section className={`rounded-2xl border border-border bg-card/60 p-5 ${className}`}>
+    <section className={`min-w-0 rounded-2xl border border-border bg-card/60 p-5 ${className}`}>
       <h2 className="mb-4 text-base font-semibold">{title}</h2>
       {children}
     </section>
@@ -508,10 +510,17 @@ export function QuantumLab() {
     [snapshot],
   );
   const running = status === "executando";
+  const previewHash = useMemo(
+    () => preview.circuit && circuitHash(preview.circuit),
+    [preview.circuit],
+  );
+  const original = snapshot?.original;
+  const runHash = useMemo(() => original && circuitHash(original), [original]);
+  const showRun = !!previewHash && (!snapshot || previewHash === runHash);
 
   return (
-    <div className="grid gap-6">
-      <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
+    <div className="grid min-w-0 gap-6 [&>*]:min-w-0">
+      <div className="grid min-w-0 gap-6 lg:grid-cols-[1.2fr_1fr]">
         <Panel title="1. Circuito de entrada">
           <div className="mb-3 flex flex-wrap gap-2">
             {EXAMPLES.map((example) => (
@@ -529,16 +538,35 @@ export function QuantumLab() {
               </button>
             ))}
           </div>
-          <label htmlFor="qaie-source" className="sr-only">
-            Circuito OpenQASM 2 ou JSON
-          </label>
-          <textarea
-            id="qaie-source"
-            value={source}
-            onChange={(e) => setSource(e.target.value)}
-            spellCheck={false}
-            className="h-64 w-full rounded-xl border border-input bg-background/60 p-3 font-mono text-xs"
-          />
+          <Tabs defaultValue="graph">
+            <TabsList
+              aria-label="Apresentação do circuito"
+              className="mb-2 max-w-full [&_button]:whitespace-normal [&_button]:px-2 [&_button]:text-xs sm:[&_button]:text-sm"
+            >
+              <TabsTrigger value="graph">Visualização</TabsTrigger>
+              <TabsTrigger value="code">Código do circuito</TabsTrigger>
+            </TabsList>
+            <TabsContent value="graph">
+              <QuantumGraph
+                circuit={preview.circuit}
+                snapshot={showRun ? snapshot : undefined}
+                islands={showRun ? islands : []}
+                running={showRun && running}
+              />
+            </TabsContent>
+            <TabsContent value="code">
+              <label htmlFor="qaie-source" className="sr-only">
+                Circuito OpenQASM 2 ou JSON
+              </label>
+              <textarea
+                id="qaie-source"
+                value={source}
+                onChange={(e) => setSource(e.target.value)}
+                spellCheck={false}
+                className="h-64 w-full rounded-xl border border-input bg-background/60 p-3 font-mono text-xs"
+              />
+            </TabsContent>
+          </Tabs>
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-xs">
             <span className={preview.error ? "text-destructive" : "text-muted-foreground"}>
               {preview.error ??
@@ -557,7 +585,7 @@ export function QuantumLab() {
         </Panel>
 
         <Panel title="2. Objetivo e orçamento">
-          <div className="grid grid-cols-2 gap-3 text-sm">
+          <div className="grid grid-cols-2 gap-3 text-sm [&_label]:min-w-0 [&_input]:min-w-0">
             {WEIGHT_KEYS.map((key) => (
               <label key={key} className="grid gap-1">
                 <span className="text-xs text-muted-foreground">Peso · {METRIC_LABELS[key]}</span>
