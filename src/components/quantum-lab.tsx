@@ -315,6 +315,7 @@ export function QuantumLab() {
     runId.current = id ?? `run-${Date.now()}`;
     createdAt.current = created ?? Date.now();
     lastSaved.current = Date.now();
+    latest.current = fromSnapshot;
     finished.current = new Set();
     const pool = ensureWorkers(workerCount);
     const hubSeed = fromSnapshot?.config.seed ?? seed;
