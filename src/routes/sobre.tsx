@@ -13,6 +13,16 @@ export const Route = createFileRoute("/sobre")({
 });
 const courses = [
   {
+    title: "Network Operations",
+    issuer: "Coursera",
+    status: "Curso concluído",
+    date: "Credencial: DS3DLO7OQJZ6",
+    description: "Formação complementar em operações de redes.",
+    url: "https://coursera.org/share/1afba6cea00c57cef9f61c15f8fd8ecd",
+    linkLabel: "Verificar certificado",
+    note: "Certificado de conclusão com link público fornecido pelo titular.",
+  },
+  {
     title: "Introduction to Data Analysis Using Python",
     issuer: "Google · Coursera",
     status: "Certificado verificável",
@@ -80,10 +90,9 @@ function About() {
         <PortfolioProjects />
         <div id="certificacoes" className="mt-16 scroll-mt-8">
           <p className="eyebrow">FORMAÇÃO GOOGLE · COURSERA</p>
-          <h2 className="mt-4 text-3xl font-semibold">Certificado e cursos concluídos</h2>
+          <h2 className="mt-4 text-3xl font-semibold">Certificados e cursos concluídos</h2>
           <p className="mt-4 leading-relaxed text-muted-foreground">
-            Formação conferida nos registros da Coursera. O certificado de Python tem verificação
-            pública; redes e cibersegurança aparecem como cursos concluídos.
+            Formação complementar pela Coursera, com links para certificados e cursos concluídos.
           </p>
           <div className="mt-7 grid gap-6 md:grid-cols-3">
             {courses.map((course) => (
