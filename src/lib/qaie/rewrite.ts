@@ -56,10 +56,25 @@ function mergeRotation(a: Gate, b: Gate): Gate[] | undefined {
  * rotations across gates they provably commute with. Every step is an exact identity.
  */
 export function simplify(circuit: Circuit): Circuit {
+  return simplifyTracked(circuit).circuit;
+}
+
+/** `simplify` that also returns each step as a replayable `Transformation` for the genealogy. */
+export function simplifyTracked(circuit: Circuit): {
+  circuit: Circuit;
+  transformations: Transformation[];
+} {
+  const transformations: Transformation[] = [];
   let gates = circuit.gates.flatMap((g) => {
-    if (g.name === "rz") return canonicalPhase(g) ?? [cloneGate(g)];
-    if ((g.name === "rx" || g.name === "ry") && normalizeAngle(g.params?.[0] ?? 0) === 0) return [];
-    return [cloneGate(g)];
+    let replacement = [cloneGate(g)];
+    if (g.name === "rz") replacement = canonicalPhase(g) ?? replacement;
+    if ((g.name === "rx" || g.name === "ry") && normalizeAngle(g.params?.[0] ?? 0) === 0) {
+      replacement = [];
+    }
+    if (replacement.length !== 1 || !gatesEqual(replacement[0] as Gate, g)) {
+      transformations.push({ rule: "simplificação", window: [cloneGate(g)], replacement });
+    }
+    return replacement;
   });
   let changed = true;
   while (changed) {
@@ -69,19 +84,16 @@ export function simplify(circuit: Circuit): Circuit {
       for (let j = i + 1; j < gates.length; j++) {
         const second = gates[j] as Gate;
         if (!sharesQubit(first, second)) continue;
-        if (isInversePair(first, second)) {
-          gates = [...gates.slice(0, i), ...gates.slice(i + 1, j), ...gates.slice(j + 1)];
-          changed = true;
-          break outer;
-        }
-        const merged = mergeRotation(first, second);
+        const merged = isInversePair(first, second) ? [] : mergeRotation(first, second);
         if (merged && merged.length < 2) {
-          gates = [
-            ...gates.slice(0, i),
-            ...merged,
-            ...gates.slice(i + 1, j),
-            ...gates.slice(j + 1),
-          ];
+          const between = gates.slice(i + 1, j);
+          const replacement = [...merged, ...between];
+          transformations.push({
+            rule: merged.length === 0 ? "cancelamento de inversos" : "fusão de rotações",
+            window: gates.slice(i, j + 1).map(cloneGate),
+            replacement: replacement.map(cloneGate),
+          });
+          gates = [...gates.slice(0, i), ...replacement, ...gates.slice(j + 1)];
           changed = true;
           break outer;
         }
@@ -89,7 +101,7 @@ export function simplify(circuit: Circuit): Circuit {
       }
     }
   }
-  return { numQubits: circuit.numQubits, gates };
+  return { circuit: { numQubits: circuit.numQubits, gates }, transformations };
 }
 
 function windowMatches(gates: Gate[], index: number, pattern: Gate[]): boolean {

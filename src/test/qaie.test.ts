@@ -91,6 +91,19 @@ describe("QAIE rewriting", () => {
   });
 });
 
+describe("QAIE genealogy", () => {
+  it("records simplification steps so a lineage replays to the elite circuit", () => {
+    const original = example("redundante");
+    const engine = new QaieEngine(original, { seed: 8 });
+    for (let i = 0; i < 12; i++) engine.step();
+    for (const elite of engine.snapshot().elites) {
+      let circuit: Circuit | undefined = original;
+      for (const t of elite.lineage) circuit = circuit && replay(circuit, t);
+      expect(circuit && circuitHash(circuit)).toBe(circuitHash(elite.circuit));
+    }
+  });
+});
+
 describe("QAIE engine", () => {
   it("never regresses the best validated cost and is reproducible", () => {
     const run = () => {

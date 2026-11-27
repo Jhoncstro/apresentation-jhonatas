@@ -8,7 +8,14 @@ import {
   weightedCost,
 } from "./metrics";
 import { mulberry32, pick } from "./random";
-import { RULES, type Transformation, applySite, randomMove, replay, simplify } from "./rewrite";
+import {
+  RULES,
+  type Transformation,
+  applySite,
+  randomMove,
+  replay,
+  simplifyTracked,
+} from "./rewrite";
 import { type VerificationOptions, type VerificationResult, verifyEquivalence } from "./verify";
 
 export const STRATEGIES = [
@@ -262,18 +269,20 @@ export class QaieEngine {
   ): { circuit: Circuit; lineage: Transformation[]; donors?: [Elite, Elite] } {
     const { config } = this.state;
     if (strategy === "descida gulosa") {
-      let current = simplify(parent.circuit);
-      let lineage = [...parent.lineage];
+      const start = simplifyTracked(parent.circuit);
+      let current = start.circuit;
+      let lineage = [...parent.lineage, ...start.transformations];
       let currentCost = this.cost(current).cost;
       for (const rule of RULES) {
         for (const site of rule.sites(current.gates).slice(0, 60)) {
           const moved = applySite(current, rule, site);
-          const next = simplify(moved.circuit);
+          const tidy = simplifyTracked(moved.circuit);
+          const next = tidy.circuit;
           const nextCost = this.cost(next).cost;
           if (nextCost < currentCost - EPSILON) {
             current = next;
             currentCost = nextCost;
-            lineage = [...lineage, moved.transformation];
+            lineage = [...lineage, moved.transformation, ...tidy.transformations];
             break;
           }
         }
@@ -284,14 +293,16 @@ export class QaieEngine {
       let current = parent.circuit;
       let currentCost = this.cost(current).cost;
       let lineage = [...parent.lineage];
-      let best = { circuit: simplify(current), lineage };
+      const start = simplifyTracked(current);
+      let best = { circuit: start.circuit, lineage: [...lineage, ...start.transformations] };
       let bestCost = this.cost(best.circuit).cost;
       let accepted = 0;
       for (let k = 0; k < config.annealingSteps; k++) {
         const temperature = this.state.temperature * (1 - k / config.annealingSteps) + 1e-6;
         const move = randomMove(current, this.random);
         if (!move) break;
-        const next = simplify(move.circuit);
+        const tidy = simplifyTracked(move.circuit);
+        const next = tidy.circuit;
         const nextCost = this.cost(next).cost;
         if (
           nextCost <= currentCost ||
@@ -299,7 +310,7 @@ export class QaieEngine {
         ) {
           current = next;
           currentCost = nextCost;
-          lineage = [...lineage, move.transformation];
+          lineage = [...lineage, move.transformation, ...tidy.transformations];
           accepted++;
           if (nextCost < bestCost - EPSILON) {
             best = { circuit: next, lineage };
@@ -315,7 +326,10 @@ export class QaieEngine {
       return best;
     }
     if (strategy === "beam search") {
-      let beam = [{ circuit: simplify(parent.circuit), lineage: [...parent.lineage] }];
+      const start = simplifyTracked(parent.circuit);
+      let beam = [
+        { circuit: start.circuit, lineage: [...parent.lineage, ...start.transformations] },
+      ];
       let best = beam[0] as { circuit: Circuit; lineage: Transformation[] };
       let bestCost = this.cost(best.circuit).cost;
       for (let depth = 0; depth < config.beamDepth; depth++) {
@@ -329,10 +343,11 @@ export class QaieEngine {
           for (let k = 0; k < config.beamWidth * 3; k++) {
             const move = randomMove(item.circuit, this.random);
             if (!move) break;
-            const circuit = simplify(move.circuit);
+            const tidy = simplifyTracked(move.circuit);
+            const circuit = tidy.circuit;
             children.push({
               circuit,
-              lineage: [...item.lineage, move.transformation],
+              lineage: [...item.lineage, move.transformation, ...tidy.transformations],
               cost: this.cost(circuit).cost,
               hash: circuitHash(circuit),
             });
@@ -363,7 +378,12 @@ export class QaieEngine {
         lineage.push(transformation);
       }
     }
-    return { circuit: simplify(circuit), lineage, donors: [parent, donor] };
+    const tidy = simplifyTracked(circuit);
+    return {
+      circuit: tidy.circuit,
+      lineage: [...lineage, ...tidy.transformations],
+      donors: [parent, donor],
+    };
   }
 
   private salvage(
@@ -375,13 +395,9 @@ export class QaieEngine {
     for (const transformation of lineage.slice(parent.lineage.length)) {
       const next = replay(circuit, transformation);
       if (!next) continue;
-      const simplified = simplify(next);
-      if (
-        !verifyEquivalence(this.state.original, simplified, this.state.config.verification)
-          .equivalent
-      )
+      if (!verifyEquivalence(this.state.original, next, this.state.config.verification).equivalent)
         break;
-      circuit = simplified;
+      circuit = next;
       kept.push(transformation);
     }
     return kept.length > parent.lineage.length ? { circuit, lineage: kept } : undefined;
