@@ -318,6 +318,8 @@ export function QuantumLab() {
     finished.current = new Set();
     const pool = ensureWorkers(workerCount);
     const hubSeed = fromSnapshot?.config.seed ?? seed;
+    const runWeights = fromSnapshot?.config.weights ?? weights;
+    if (fromSnapshot) setWeights(runWeights);
     islandBest.current = pool.map(() => 1);
     setIslands(
       pool.map((_, index) => ({
@@ -335,7 +337,7 @@ export function QuantumLab() {
       worker.postMessage({
         type: "start",
         circuit,
-        config: { ...DEFAULT_CONFIG, weights, seed: hubSeed + index * 1009 },
+        config: { ...DEFAULT_CONFIG, weights: runWeights, seed: hubSeed + index * 1009 },
         budget,
         ...(index === 0 && fromSnapshot ? { snapshot: fromSnapshot } : {}),
       } satisfies WorkerRequest),
