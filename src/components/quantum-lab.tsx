@@ -62,7 +62,8 @@ const WEIGHT_KEYS: MetricKey[] = [
   "rotationCount",
   "gateCount",
 ];
-const MAX_FILE_BYTES = 5 * 1024 * 1024;
+const MAX_CIRCUIT_BYTES = 5 * 1024 * 1024;
+const MAX_JSON_STATE_BYTES = 100 * 1024 * 1024;
 const AUTOSAVE_MS = 5000;
 
 function download(name: string, data: BlobPart, type: string) {
@@ -416,9 +417,14 @@ export function QuantumLab() {
 
   async function onFile(file: File | undefined) {
     if (!file) return;
-    if (file.size > MAX_FILE_BYTES) return setError("Arquivo acima de 5 MB.");
+    const isJson = /\.json$/i.test(file.name);
+    if (file.size > (isJson ? MAX_JSON_STATE_BYTES : MAX_CIRCUIT_BYTES)) {
+      return setError(
+        isJson ? "Arquivo JSON acima de 100 MB." : "Arquivo de circuito acima de 5 MB.",
+      );
+    }
     const text = await file.text();
-    if (/\.json$/i.test(file.name) && /"(format|bestId)"/.test(text)) {
+    if (isJson && /"(format|bestId)"/.test(text)) {
       try {
         if (importExternal(text)) return;
         if (text.includes('"bestId"')) {
@@ -437,6 +443,7 @@ export function QuantumLab() {
         return setError(e instanceof Error ? e.message : String(e));
       }
     }
+    if (file.size > MAX_CIRCUIT_BYTES) return setError("Arquivo de circuito acima de 5 MB.");
     setFilename(file.name);
     setSource(text);
   }
