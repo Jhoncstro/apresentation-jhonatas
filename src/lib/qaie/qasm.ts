@@ -14,7 +14,7 @@ const ALIASES: Record<string, GateName> = {
   p: "rz",
   phase: "rz",
 };
-const IGNORED = new Set(["barrier", "measure", "creg", "include", "OPENQASM", "id"]);
+const IGNORED = new Set(["barrier", "creg", "include", "OPENQASM", "id"]);
 const MAX_QUBITS = 64;
 const MAX_GATES = 200_000;
 
@@ -91,9 +91,17 @@ export function parseQasm(source: string): Circuit {
     if (!register) throw new Error(`Registrador desconhecido: ${operand}.`);
     return Array.from({ length: register.size }, (_, i) => register.offset + i);
   };
+  const measured = new Set<number>();
   for (const statement of statements) {
     const head = /^([A-Za-z_]\w*)/.exec(statement)?.[1] ?? "";
     if (IGNORED.has(head)) continue;
+    if (head === "measure") {
+      // Terminal measurements are dropped (the unitary part is optimized); a gate after one is rejected.
+      const target = /^measure\s+(.+?)\s*->/.exec(statement)?.[1];
+      if (!target) throw new Error(`Medição inválida: ${statement}.`);
+      resolve(target).forEach((q) => measured.add(q));
+      continue;
+    }
     if (head === "qreg") {
       const match = /^qreg\s+([A-Za-z_]\w*)\s*\[\s*(\d+)\s*\]$/.exec(statement);
       if (!match) throw new Error(`Declaração qreg inválida: ${statement}.`);
@@ -118,6 +126,11 @@ export function parseQasm(source: string): Circuit {
     const width = Math.max(...operands.map((o) => o.length));
     for (let i = 0; i < width; i++) {
       const qubits = operands.map((o) => (o.length === 1 ? o[0] : o[i]) as number);
+      if (qubits.some((q) => measured.has(q))) {
+        throw new Error(
+          `Medição intermediária não suportada: porta ${rawName} após medir o qubit.`,
+        );
+      }
       gates.push(params ? { name, qubits, params: [...params] } : { name, qubits });
       if (gates.length > MAX_GATES) throw new Error(`Limite de ${MAX_GATES} portas excedido.`);
     }
