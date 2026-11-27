@@ -154,8 +154,7 @@ assert.ok(
   robots.split(/\r?\n/).some((line) => line.trim() === `Sitemap: ${siteUrl}/sitemap.xml`),
   "robots.txt must reference the portfolio sitemap.",
 );
-const blockedRoutes = [];
-let agents = [];
+const robotsGroups = [];
 let readingAgents = false;
 for (const rawLine of robots.split(/\r?\n/)) {
   const line = rawLine.replace(/#.*/, "").trim();
@@ -163,14 +162,33 @@ for (const rawLine of robots.split(/\r?\n/)) {
   if (!match) continue;
   const [, field, value] = match;
   if (/^user-agent$/i.test(field)) {
-    agents = readingAgents ? [...agents, value] : [value];
+    if (!readingAgents) robotsGroups.push({ agents: [], rules: [] });
+    robotsGroups.at(-1).agents.push(value);
     readingAgents = true;
     continue;
   }
   readingAgents = false;
-  if (!/^disallow$/i.test(field) || !value) continue;
+  if (/^(?:allow|disallow)$/i.test(field) && value && robotsGroups.length) {
+    robotsGroups.at(-1).rules.push({ allow: /^allow$/i.test(field), path: value });
+  }
+}
+function robotsPattern(rulePath) {
+  const anchored = rulePath.endsWith("$");
+  const body = (anchored ? rulePath.slice(0, -1) : rulePath)
+    .split("*")
+    .map((part) => part.replace(/[.+?^${}()|[\]\\]/g, "\\$&"))
+    .join(".*");
+  return new RegExp(`^${body}${anchored ? "$" : ""}`);
+}
+const blockedRoutes = [];
+for (const { agents, rules } of robotsGroups) {
   for (const [route] of publicPages) {
-    if (route.startsWith(value)) blockedRoutes.push(`${agents.join(", ")}: ${route}`);
+    const matching = rules.filter((rule) => robotsPattern(rule.path).test(route));
+    const longest = Math.max(0, ...matching.map((rule) => rule.path.length));
+    const decisive = matching.filter((rule) => rule.path.length === longest);
+    if (decisive.length && decisive.every((rule) => !rule.allow)) {
+      blockedRoutes.push(`${agents.join(", ")}: ${route}`);
+    }
   }
 }
 assert.deepEqual(blockedRoutes, [], `robots.txt blocks public pages:\n${blockedRoutes.join("\n")}`);
