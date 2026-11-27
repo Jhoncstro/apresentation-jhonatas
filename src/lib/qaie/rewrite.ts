@@ -17,6 +17,11 @@ export interface Transformation {
   rule: string;
   window: Gate[];
   replacement: Gate[];
+  /**
+   * Non-contiguous pair: `window` is [first, second] with `gap` gates between them that must
+   * commute with `first`; `replacement` takes the place of `first` and `second` is removed.
+   */
+  gap?: number;
 }
 
 interface Site {
@@ -86,14 +91,18 @@ export function simplifyTracked(circuit: Circuit): {
         if (!sharesQubit(first, second)) continue;
         const merged = isInversePair(first, second) ? [] : mergeRotation(first, second);
         if (merged && merged.length < 2) {
-          const between = gates.slice(i + 1, j);
-          const replacement = [...merged, ...between];
           transformations.push({
             rule: merged.length === 0 ? "cancelamento de inversos" : "fusão de rotações",
-            window: gates.slice(i, j + 1).map(cloneGate),
-            replacement: replacement.map(cloneGate),
+            window: [cloneGate(first), cloneGate(second)],
+            replacement: merged.map(cloneGate),
+            ...(j - i > 1 ? { gap: j - i - 1 } : {}),
           });
-          gates = [...gates.slice(0, i), ...replacement, ...gates.slice(j + 1)];
+          gates = [
+            ...gates.slice(0, i),
+            ...merged,
+            ...gates.slice(i + 1, j),
+            ...gates.slice(j + 1),
+          ];
           changed = true;
           break outer;
         }
@@ -275,7 +284,27 @@ export function randomMove(
 
 /** Replays a transformation wherever its exact window occurs (first match). */
 export function replay(circuit: Circuit, transformation: Transformation): Circuit | undefined {
-  const { window } = transformation;
+  const { window, gap } = transformation;
+  if (gap !== undefined) {
+    const [first, second] = window as [Gate, Gate];
+    const gates = circuit.gates;
+    for (let i = 0; i + gap + 1 < gates.length; i++) {
+      const j = i + gap + 1;
+      if (!gatesEqual(gates[i] as Gate, first) || !gatesEqual(gates[j] as Gate, second)) continue;
+      const between = gates.slice(i + 1, j);
+      if (!between.every((g) => !sharesQubit(first, g) || commutes(first, g))) continue;
+      return {
+        numQubits: circuit.numQubits,
+        gates: [
+          ...gates.slice(0, i),
+          ...transformation.replacement.map(cloneGate),
+          ...between,
+          ...gates.slice(j + 1),
+        ],
+      };
+    }
+    return undefined;
+  }
   for (let i = 0; i + window.length <= circuit.gates.length; i++) {
     if (windowMatches(circuit.gates, i, window)) {
       return {

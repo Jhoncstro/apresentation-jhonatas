@@ -4,7 +4,7 @@ import { QaieEngine } from "@/lib/qaie/engine";
 import { EXAMPLES } from "@/lib/qaie/examples";
 import { computeMetrics, paretoFront } from "@/lib/qaie/metrics";
 import { parseCircuit, parseQasm, toQasm } from "@/lib/qaie/qasm";
-import { RULES, applySite, replay, simplify } from "@/lib/qaie/rewrite";
+import { RULES, applySite, replay, simplify, simplifyTracked } from "@/lib/qaie/rewrite";
 import { verifyEquivalence } from "@/lib/qaie/verify";
 
 const example = (id: string) => parseQasm(EXAMPLES.find((e) => e.id === id)?.qasm ?? "");
@@ -105,6 +105,22 @@ describe("QAIE genealogy", () => {
       for (const t of elite.lineage) circuit = circuit && replay(circuit, t);
       expect(circuit && circuitHash(circuit)).toBe(circuitHash(elite.circuit));
     }
+  });
+});
+
+describe("QAIE genealogy size", () => {
+  it("records a cancellation around a long block without copying the block", () => {
+    const block = Array.from({ length: 500 }, () => gate("h", [1]));
+    const circuit: Circuit = { numQubits: 2, gates: [gate("x", [0]), ...block, gate("x", [0])] };
+    const tracked = simplifyTracked(circuit);
+    const cancel = tracked.transformations.find(
+      (t) => t.rule === "cancelamento de inversos" && t.gap,
+    );
+    expect(cancel?.window).toHaveLength(2);
+    expect(
+      tracked.transformations.every((t) => t.window.length <= 2 && t.replacement.length <= 1),
+    ).toBe(true);
+    expect(replay(circuit, cancel!)?.gates).toHaveLength(500);
   });
 });
 
