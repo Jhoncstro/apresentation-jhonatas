@@ -11,7 +11,9 @@ export default defineConfig({
     tanstackStart({
       server: { entry: "server" },
       spa: { enabled: true, maskPath: "/app" },
-      pages: ["/", "/projetos", "/sobre", "/contato"].map((path) => ({ path })),
+      pages: ["/", "/projetos", "/sobre", "/contato", "/laboratorio-quantico"].map((path) => ({
+        path,
+      })),
       prerender: {
         enabled: true,
         autoStaticPathsDiscovery: false,
