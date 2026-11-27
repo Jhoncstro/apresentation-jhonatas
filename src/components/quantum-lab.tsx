@@ -284,6 +284,14 @@ export function QuantumLab() {
     return workers.current;
   };
 
+  /** Terminates the pool so a stale hub can no longer overwrite the state being loaded. */
+  const detachWorkers = () => {
+    workers.current.splice(0).forEach((w) => w.terminate());
+    finished.current = new Set();
+    setIslands((current) => current.map((w) => ({ ...w, running: false })));
+    setStatus("parado");
+  };
+
   const broadcast = (request: WorkerRequest) =>
     workers.current.forEach((w) => w.postMessage(request));
   const sendHub = (request: WorkerRequest) => workers.current[0]?.postMessage(request);
@@ -340,7 +348,7 @@ export function QuantumLab() {
       const circuit = parseCircuit(c.qasm, "resultado.qasm");
       return { circuit, lineage: [], origin };
     });
-    if (status === "executando") {
+    if (status !== "parado" && workers.current.length > 0) {
       sendHub({ type: "import", candidates });
       setMessage(
         `${candidates.length} candidatos de ${origin} enviados ao hub para nova verificação.`,
@@ -408,6 +416,7 @@ export function QuantumLab() {
         if (importExternal(text)) return;
         if (text.includes('"bestId"')) {
           const { snapshot: snap, verified, environment } = await readCheckpoint(text);
+          detachWorkers();
           setSnapshot(snap);
           latest.current = snap;
           setStatus("parado");
@@ -452,6 +461,7 @@ export function QuantumLab() {
   async function restoreRun(id: string) {
     const record = await loadRun(id);
     if (!record) return;
+    detachWorkers();
     setRunName(record.name);
     runId.current = record.id;
     createdAt.current = record.createdAt;
@@ -465,6 +475,7 @@ export function QuantumLab() {
   async function restoreCheckpoint(id: number) {
     const record = await loadCheckpoint(id);
     if (!record) return;
+    detachWorkers();
     latest.current = record.snapshot;
     setSnapshot(record.snapshot);
     setStatus("parado");
