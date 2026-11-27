@@ -5,9 +5,15 @@ export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
       { title: "Painel do Paciente em Tempo Real — VitaNexo" },
-      { name: "description", content: "Monitoramento de sinais vitais e intervenções médicas em tempo real." },
+      {
+        name: "description",
+        content: "Monitoramento de sinais vitais e intervenções médicas em tempo real.",
+      },
       { property: "og:title", content: "Painel do Paciente — VitaNexo" },
-      { property: "og:description", content: "Sinais vitais, alertas e intervenções médicas ao vivo." },
+      {
+        property: "og:description",
+        content: "Sinais vitais, alertas e intervenções médicas ao vivo.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -64,8 +70,11 @@ function Dashboard() {
   const now = () => new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
   const addIntervention = (txt: string) => setLog((l) => [{ t: now(), who: "Você", txt }, ...l]);
 
-  const max = 140, min = 50;
-  const path = hist.map((h, i) => `${(i / (hist.length - 1)) * 100},${100 - ((h - min) / (max - min)) * 100}`).join(" ");
+  const max = 140,
+    min = 50;
+  const path = hist
+    .map((h, i) => `${(i / (hist.length - 1)) * 100},${100 - ((h - min) / (max - min)) * 100}`)
+    .join(" ");
 
   const cards: [string, string, string, boolean][] = [
     ["Freq. cardíaca", `${v.hr}`, "bpm", v.hr > 100],
@@ -75,20 +84,33 @@ function Dashboard() {
     ["Freq. resp.", `${v.rr}`, "irpm", v.rr > 24],
   ];
 
-  const badge = { ok: "bg-success/15 text-success", warning: "bg-warning/15 text-warning", critical: "bg-destructive/20 text-destructive" }[s];
+  const badge = {
+    ok: "bg-success/15 text-success",
+    warning: "bg-warning/15 text-warning",
+    critical: "bg-destructive/20 text-destructive",
+  }[s];
   const label = { ok: "Estável", warning: "Atenção", critical: "Crítico" }[s];
 
   return (
     <div className="min-h-screen md:flex">
       <aside className="border-b border-border bg-card p-5 md:w-72 md:border-b-0 md:border-r">
-        <Link to="/" className="font-display text-lg font-bold">Vita<span className="text-brand">Nexo</span></Link>
-        <p className="mt-6 mb-3 text-xs uppercase tracking-wider text-muted-foreground">Pacientes monitorados</p>
+        <Link to="/" className="font-display text-lg font-bold">
+          Vita<span className="text-brand">Nexo</span>
+        </Link>
+        <p className="mt-6 mb-3 text-xs uppercase tracking-wider text-muted-foreground">
+          Pacientes monitorados
+        </p>
         <div className="space-y-2">
           {patients.map((pt, i) => (
-            <button key={pt.id} onClick={() => setSel(i)}
-              className={`w-full rounded-lg p-3 text-left transition ${i === sel ? "bg-secondary ring-1 ring-primary/50" : "hover:bg-secondary/60"}`}>
+            <button
+              key={pt.id}
+              onClick={() => setSel(i)}
+              className={`w-full rounded-lg p-3 text-left transition ${i === sel ? "bg-secondary ring-1 ring-primary/50" : "hover:bg-secondary/60"}`}
+            >
               <div className="font-semibold">{pt.name}</div>
-              <div className="text-xs text-muted-foreground">{pt.bed} · {pt.dx}</div>
+              <div className="text-xs text-muted-foreground">
+                {pt.bed} · {pt.dx}
+              </div>
             </button>
           ))}
         </div>
@@ -98,10 +120,14 @@ function Dashboard() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold">{p.name}</h1>
-            <p className="text-muted-foreground">{p.age} anos · {p.bed} · {p.dx}</p>
+            <p className="text-muted-foreground">
+              {p.age} anos · {p.bed} · {p.dx}
+            </p>
           </div>
           <div className="flex items-center gap-3">
-            <span className="flex items-center gap-2 text-sm text-muted-foreground"><span className="pulse-dot h-2 w-2 rounded-full bg-primary" /> Ao vivo</span>
+            <span className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span className="pulse-dot h-2 w-2 rounded-full bg-primary" /> Ao vivo
+            </span>
             <span className={`rounded-full px-3 py-1 text-sm font-semibold ${badge}`}>{label}</span>
           </div>
         </div>
@@ -114,9 +140,16 @@ function Dashboard() {
 
         <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
           {cards.map(([n, val, u, alert]) => (
-            <div key={n} className={`rounded-xl border bg-card p-4 ${alert ? "border-warning/60" : "border-border"}`}>
+            <div
+              key={n}
+              className={`rounded-xl border bg-card p-4 ${alert ? "border-warning/60" : "border-border"}`}
+            >
               <div className="text-xs text-muted-foreground">{n}</div>
-              <div className={`mt-2 font-display text-3xl font-bold ${alert ? "text-warning" : ""}`}>{val}</div>
+              <div
+                className={`mt-2 font-display text-3xl font-bold ${alert ? "text-warning" : ""}`}
+              >
+                {val}
+              </div>
               <div className="text-xs text-muted-foreground">{u}</div>
             </div>
           ))}
@@ -126,20 +159,50 @@ function Dashboard() {
           <div className="rounded-xl border border-border bg-card p-5 lg:col-span-2">
             <h2 className="font-semibold">Frequência cardíaca — tendência</h2>
             <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="mt-4 h-48 w-full">
-              <polyline points={path} fill="none" stroke="var(--primary)" strokeWidth="0.8" vectorEffect="non-scaling-stroke" />
+              <polyline
+                points={path}
+                fill="none"
+                stroke="var(--primary)"
+                strokeWidth="0.8"
+                vectorEffect="non-scaling-stroke"
+              />
             </svg>
           </div>
 
           <div className="rounded-xl border border-border bg-card p-5">
             <h2 className="font-semibold">Intervenções rápidas</h2>
             <div className="mt-4 grid grid-cols-2 gap-2">
-              {["Aumentar O₂", "Chamar médico", "Administrar antitérmico", "Coletar exames"].map((a) => (
-                <button key={a} onClick={() => addIntervention(a)} className="rounded-lg bg-secondary px-3 py-2 text-sm hover:bg-primary hover:text-primary-foreground">{a}</button>
-              ))}
+              {["Aumentar O₂", "Chamar médico", "Administrar antitérmico", "Coletar exames"].map(
+                (a) => (
+                  <button
+                    key={a}
+                    onClick={() => addIntervention(a)}
+                    className="rounded-lg bg-secondary px-3 py-2 text-sm hover:bg-primary hover:text-primary-foreground"
+                  >
+                    {a}
+                  </button>
+                ),
+              )}
             </div>
-            <form className="mt-3 flex gap-2" onSubmit={(e) => { e.preventDefault(); if (note.trim()) { addIntervention(note); setNote(""); } }}>
-              <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Registrar intervenção…" className="flex-1 rounded-lg border border-input bg-secondary px-3 py-2 text-sm outline-none" />
-              <button className="rounded-lg bg-brand px-3 text-sm font-semibold text-primary-foreground">+</button>
+            <form
+              className="mt-3 flex gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (note.trim()) {
+                  addIntervention(note);
+                  setNote("");
+                }
+              }}
+            >
+              <input
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Registrar intervenção…"
+                className="flex-1 rounded-lg border border-input bg-secondary px-3 py-2 text-sm outline-none"
+              />
+              <button className="rounded-lg bg-brand px-3 text-sm font-semibold text-primary-foreground">
+                +
+              </button>
             </form>
           </div>
         </div>
