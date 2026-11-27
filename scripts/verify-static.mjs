@@ -134,7 +134,9 @@ for (const file of files) {
 assert.deepEqual(broken, [], `Broken internal links or assets:\n${broken.join("\n")}`);
 
 const sitemap = await readFile(path.join(root, "sitemap.xml"), "utf8");
-const locations = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(([, loc]) => loc.trim());
+const locations = [...sitemap.replace(/<!--[\s\S]*?-->/g, "").matchAll(/<loc>([^<]+)<\/loc>/g)].map(
+  ([, loc]) => loc.trim(),
+);
 for (const loc of locations) {
   assert.ok(loc.startsWith(`${siteUrl}/`), `Sitemap entry outside ${siteUrl}: ${loc}.`);
   const route = loc.slice(siteUrl.length);
@@ -152,13 +154,26 @@ assert.ok(
   robots.split(/\r?\n/).some((line) => line.trim() === `Sitemap: ${siteUrl}/sitemap.xml`),
   "robots.txt must reference the portfolio sitemap.",
 );
-const wildcardRules = robots
-  .split(/User-agent:/i)
-  .find((block) => block.trimStart().startsWith("*"));
-assert.ok(
-  wildcardRules && !/^\s*Disallow:\s*\/\s*$/im.test(wildcardRules),
-  "robots.txt must allow crawling of public pages.",
-);
+const blockedRoutes = [];
+let agents = [];
+let readingAgents = false;
+for (const rawLine of robots.split(/\r?\n/)) {
+  const line = rawLine.replace(/#.*/, "").trim();
+  const match = line.match(/^([A-Za-z-]+)\s*:\s*(.*)$/);
+  if (!match) continue;
+  const [, field, value] = match;
+  if (/^user-agent$/i.test(field)) {
+    agents = readingAgents ? [...agents, value] : [value];
+    readingAgents = true;
+    continue;
+  }
+  readingAgents = false;
+  if (!/^disallow$/i.test(field) || !value) continue;
+  for (const [route] of publicPages) {
+    if (route.startsWith(value)) blockedRoutes.push(`${agents.join(", ")}: ${route}`);
+  }
+}
+assert.deepEqual(blockedRoutes, [], `robots.txt blocks public pages:\n${blockedRoutes.join("\n")}`);
 
 console.log(
   "Static portfolio verified: public pages, /app fallback, internal links and assets, sitemap, robots, hosting target and credential checks.",
