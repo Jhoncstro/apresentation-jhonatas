@@ -5,6 +5,7 @@ import { EXAMPLES } from "@/lib/qaie/examples";
 import { computeMetrics, paretoFront } from "@/lib/qaie/metrics";
 import { parseCircuit, parseQasm, toQasm } from "@/lib/qaie/qasm";
 import { RULES, applySite, replay, simplify, simplifyTracked } from "@/lib/qaie/rewrite";
+import { buildVault as buildVaultSync } from "@/lib/qaie/obsidian";
 import { verifyEquivalence } from "@/lib/qaie/verify";
 
 const example = (id: string) => parseQasm(EXAMPLES.find((e) => e.id === id)?.qasm ?? "");
@@ -121,6 +122,10 @@ describe("QAIE genealogy size", () => {
       tracked.transformations.every((t) => t.window.length <= 2 && t.replacement.length <= 1),
     ).toBe(true);
     expect(replay(circuit, cancel!)?.gates).toHaveLength(500);
+    const engine = new QaieEngine(circuit, { seed: 1 });
+    engine.step();
+    const notes = buildVaultSync("Gap", engine.snapshot());
+    expect(notes.some((f) => f.content.includes("porta(s) que comutam"))).toBe(true);
   });
 });
 

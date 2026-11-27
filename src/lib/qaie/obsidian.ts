@@ -27,6 +27,10 @@ function describe(t: Transformation): string {
           `${g.name}${g.params?.length ? `(${g.params.map((p) => p.toFixed(4)).join(",")})` : ""} ${g.qubits.join(",")}`,
       )
       .join("; ") || "∅";
+  if (t.gap !== undefined) {
+    const [first, second] = t.window;
+    return `- **${t.rule}**: \`${fmt(first ? [first] : [])}\` … ${t.gap} porta(s) que comutam … \`${fmt(second ? [second] : [])}\` → \`${fmt(t.replacement)}\` (as portas intermediárias são mantidas)`;
+  }
   return `- **${t.rule}**: \`${fmt(t.window)}\` → \`${fmt(t.replacement)}\``;
 }
 
