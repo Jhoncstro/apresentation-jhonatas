@@ -47,7 +47,9 @@ export interface LineageNode {
   id: string;
   parentIds: string[];
   generation: number;
-  strategy: StrategyName | "original";
+  strategy: StrategyName | "original" | "importado";
+  /** Computational environment that produced the candidate (e.g. "navegador · worker 2", "kaggle"). */
+  origin?: string;
   cost: number;
   metrics: CircuitMetrics;
   hash: string;
@@ -482,6 +484,71 @@ export class QaieEngine {
     s.experiments.push(experiment);
     this.trim();
     return experiment;
+  }
+
+  /**
+   * Admits a candidate produced elsewhere (another worker, a notebook, a checkpoint). It is
+   * re-verified against this engine's original circuit and re-evaluated; foreign scores are ignored.
+   */
+  importCandidate(
+    circuit: Circuit,
+    origin: string,
+    lineage: Transformation[] = [],
+  ): { accepted: boolean; newBest: boolean; reason: string; nodeId?: string } {
+    const s = this.state;
+    try {
+      validateCircuit(circuit);
+    } catch (error) {
+      return {
+        accepted: false,
+        newBest: false,
+        reason: error instanceof Error ? error.message : String(error),
+      };
+    }
+    const hash = circuitHash(circuit);
+    if (this.seen.has(hash))
+      return { accepted: false, newBest: false, reason: "Candidato já conhecido." };
+    const verification = verifyEquivalence(s.original, circuit, s.config.verification);
+    if (!verification.equivalent) {
+      s.counters.rejected++;
+      this.log(`Candidato importado de ${origin} rejeitado: ${verification.detail}`);
+      return { accepted: false, newBest: false, reason: verification.detail };
+    }
+    this.seen.add(hash);
+    s.counters.valid++;
+    const { metrics, cost } = this.cost(circuit);
+    const best = this.node(s.bestId);
+    const nodeId = `i${s.iteration}-${s.nodes.length}`;
+    s.nodes.push({
+      id: nodeId,
+      parentIds: ["g0"],
+      generation: 1,
+      strategy: "importado",
+      origin,
+      cost,
+      metrics,
+      hash,
+      transformations: lineage,
+      verification: {
+        method: verification.method,
+        fidelity: verification.fidelity,
+        detail: verification.detail,
+      },
+      iteration: s.iteration,
+      ...storable(circuit),
+    });
+    this.admitElite({ nodeId, circuit: cloneCircuit(circuit), lineage }, cost);
+    const newBest = cost < best.cost - EPSILON;
+    if (newBest) {
+      s.bestId = nodeId;
+      s.stagnation = 0;
+      s.history.push({ iteration: s.iteration, bestCost: cost, candidateCost: cost });
+    }
+    this.log(
+      `Candidato de ${origin} revalidado (${verification.method}), custo ${cost.toFixed(4)}${newBest ? ", novo melhor global" : ""}.`,
+    );
+    this.trim();
+    return { accepted: true, newBest, reason: verification.detail, nodeId };
   }
 
   /** Re-admits a stored earlier generation as an elite so new generations can branch from it. */

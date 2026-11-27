@@ -1,6 +1,7 @@
 /// <reference lib="webworker" />
 import type { Circuit } from "./circuit";
 import { type EngineConfig, type EngineSnapshot, QaieEngine } from "./engine";
+import type { Transformation } from "./rewrite";
 import { verifyEquivalence } from "./verify";
 
 export type WorkerRequest =
@@ -14,7 +15,11 @@ export type WorkerRequest =
   | { type: "pause" }
   | { type: "resume"; budget?: Budget }
   | { type: "stop" }
-  | { type: "recover"; nodeId: string };
+  | { type: "recover"; nodeId: string }
+  | {
+      type: "import";
+      candidates: { circuit: Circuit; lineage: Transformation[]; origin: string }[];
+    };
 
 export interface Budget {
   maxIterations: number;
@@ -114,6 +119,9 @@ ctx.onmessage = (event: MessageEvent<WorkerRequest>) => {
       running = false;
       post("Cancelado pelo usuário.");
       engine = undefined;
+    } else if (message.type === "import" && engine) {
+      for (const c of message.candidates) engine.importCandidate(c.circuit, c.origin, c.lineage);
+      post();
     } else if (message.type === "recover" && engine) {
       engine.recover(message.nodeId);
       post();

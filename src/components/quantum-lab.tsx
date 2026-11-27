@@ -1,10 +1,23 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Download, FolderOpen, Pause, Play, RotateCcw, Save, Square, Upload } from "lucide-react";
+import {
+  ArrowRightLeft,
+  Download,
+  FolderOpen,
+  Pause,
+  Play,
+  RotateCcw,
+  Save,
+  Square,
+  Upload,
+} from "lucide-react";
+import { DistributedCenter, type IslandState } from "@/components/distributed-center";
 import { Button } from "@/components/ui/button";
-import type { Circuit } from "@/lib/qaie/circuit";
+import { type Circuit, circuitHash } from "@/lib/qaie/circuit";
+import { ENGINE_VERSION, createCheckpoint, readCheckpoint } from "@/lib/qaie/checkpoint";
 import {
   DEFAULT_CONFIG,
   type EngineSnapshot,
+  QaieEngine,
   type LineageNode,
   STRATEGIES,
 } from "@/lib/qaie/engine";
@@ -16,7 +29,14 @@ import {
   type Weights,
   paretoFront,
 } from "@/lib/qaie/metrics";
+import { buildNotebook, parseExternalResult } from "@/lib/qaie/notebook";
 import { buildVault, canWriteVault, writeVault } from "@/lib/qaie/obsidian";
+import {
+  type DetectedResources,
+  defaultWorkerCount,
+  detectResources,
+  recommendEnvironment,
+} from "@/lib/qaie/resources";
 import { parseCircuit, toQasm } from "@/lib/qaie/qasm";
 import {
   type CheckpointRecord,
@@ -123,7 +143,13 @@ export function QuantumLab() {
   const [error, setError] = useState<string>();
   const [runs, setRuns] = useState<Omit<RunRecord, "snapshot">[]>([]);
   const [checkpoints, setCheckpoints] = useState<Omit<CheckpointRecord, "snapshot">[]>([]);
-  const worker = useRef<Worker | null>(null);
+  const [resources, setResources] = useState<DetectedResources>();
+  const [workerCount, setWorkerCount] = useState(2);
+  const [islands, setIslands] = useState<IslandState[]>([]);
+  const [vaultSyncedAt, setVaultSyncedAt] = useState<number>();
+  const workers = useRef<Worker[]>([]);
+  const islandBest = useRef<number[]>([]);
+  const finished = useRef<Set<number>>(new Set());
   const runId = useRef<string>("");
   const createdAt = useRef(Date.now());
   const latest = useRef<EngineSnapshot | undefined>(undefined);
@@ -155,45 +181,112 @@ export function QuantumLab() {
     [runName, refreshRuns],
   );
 
-  const onWorkerMessage = useCallback(
-    (event: MessageEvent<WorkerResponse>) => {
-      const data = event.data;
-      if (data.type === "error") {
-        setError(data.message);
-        setStatus("parado");
-        return;
-      }
+  const updateIsland = (index: number, snap: EngineSnapshot, isRunning: boolean, sent: boolean) =>
+    setIslands((current) =>
+      current.map((w) =>
+        w.index === index
+          ? {
+              ...w,
+              running: isRunning,
+              iteration: snap.iteration,
+              bestCost: snap.nodes.find((n) => n.id === snap.bestId)?.cost ?? 1,
+              cpuMs: snap.counters.elapsedMs,
+              sent: w.sent + (sent ? 1 : 0),
+            }
+          : w,
+      ),
+    );
+
+  const bestElite = (snap: EngineSnapshot) => {
+    const elite = snap.elites.find((e) => e.nodeId === snap.bestId);
+    const cost = snap.nodes.find((n) => n.id === snap.bestId)?.cost ?? 1;
+    return elite ? { elite, cost } : undefined;
+  };
+
+  /** Island model: workers send improvements to the hub (worker 0); the hub broadcasts its best back. */
+  const migrate = (index: number, snap: EngineSnapshot) => {
+    const found = bestElite(snap);
+    if (!found || found.cost >= (islandBest.current[index] ?? 1) - 1e-12) return false;
+    islandBest.current[index] = found.cost;
+    const candidate = {
+      circuit: found.elite.circuit,
+      lineage: found.elite.lineage,
+      origin: `navegador · worker ${index}`,
+    };
+    if (index === 0) {
+      workers.current
+        .slice(1)
+        .forEach((w) =>
+          w.postMessage({ type: "import", candidates: [candidate] } satisfies WorkerRequest),
+        );
+    } else {
+      workers.current[0]?.postMessage({
+        type: "import",
+        candidates: [candidate],
+      } satisfies WorkerRequest);
+    }
+    return true;
+  };
+
+  const handleMessage = (index: number, data: WorkerResponse) => {
+    if (data.type === "error") {
+      setError(`Worker ${index}: ${data.message}`);
+      finished.current.add(index);
+      if (finished.current.size >= workers.current.length) setStatus("parado");
+      return;
+    }
+    const sentNow = migrate(index, data.snapshot);
+    updateIsland(index, data.snapshot, data.running, sentNow && index > 0);
+    if (data.running) finished.current.delete(index);
+    if (index === 0) {
       latest.current = data.snapshot;
       setSnapshot(data.snapshot);
       if (data.reason) {
-        setStatus(data.reason.startsWith("Cancelado") ? "parado" : "pausado");
         setMessage(
-          `${data.reason} Verificação final do melhor: ${data.finalCheck?.equivalent ? "equivalente" : "NÃO equivalente"} (${data.finalCheck?.detail}).`,
+          `${data.reason} Verificação final do melhor (hub): ${data.finalCheck?.equivalent ? "equivalente" : "NÃO equivalente"} (${data.finalCheck?.detail}).`,
         );
         void persist(data.snapshot, true);
       } else if (Date.now() - lastSaved.current > AUTOSAVE_MS) {
         void persist(data.snapshot, true);
       }
-    },
-    [persist],
-  );
+    }
+    if (data.reason) {
+      finished.current.add(index);
+      if (finished.current.size >= workers.current.length) {
+        setStatus(data.reason.startsWith("Cancelado") ? "parado" : "pausado");
+      }
+    }
+  };
+  const handlerRef = useRef(handleMessage);
+  handlerRef.current = handleMessage;
 
   useEffect(() => {
     void refreshRuns().catch(() => undefined);
-    return () => worker.current?.terminate();
+    void detectResources().then((r) => {
+      setResources(r);
+      setWorkerCount(defaultWorkerCount(r.cores));
+    });
+    const pool = workers.current;
+    return () => pool.forEach((w) => w.terminate());
   }, [refreshRuns]);
 
-  const ensureWorker = () => {
-    if (!worker.current) {
-      worker.current = new Worker(new URL("../lib/qaie/worker.ts", import.meta.url), {
+  const ensureWorkers = (count: number) => {
+    while (workers.current.length > count) workers.current.pop()?.terminate();
+    while (workers.current.length < count) {
+      const index = workers.current.length;
+      const worker = new Worker(new URL("../lib/qaie/worker.ts", import.meta.url), {
         type: "module",
       });
+      worker.onmessage = (event: MessageEvent<WorkerResponse>) =>
+        handlerRef.current(index, event.data);
+      workers.current.push(worker);
     }
-    worker.current.onmessage = onWorkerMessage;
-    return worker.current;
+    return workers.current;
   };
 
-  const send = (request: WorkerRequest) => ensureWorker().postMessage(request);
+  const broadcast = (request: WorkerRequest) =>
+    workers.current.forEach((w) => w.postMessage(request));
+  const sendHub = (request: WorkerRequest) => workers.current[0]?.postMessage(request);
 
   function start(fromSnapshot?: EngineSnapshot, id?: string, created?: number) {
     setError(undefined);
@@ -206,29 +299,124 @@ export function QuantumLab() {
     runId.current = id ?? `run-${Date.now()}`;
     createdAt.current = created ?? Date.now();
     lastSaved.current = Date.now();
+    finished.current = new Set();
+    const pool = ensureWorkers(workerCount);
+    const hubSeed = fromSnapshot?.config.seed ?? seed;
+    islandBest.current = pool.map(() => 1);
+    setIslands(
+      pool.map((_, index) => ({
+        index,
+        seed: hubSeed + index * 1009,
+        running: true,
+        iteration: 0,
+        bestCost: 1,
+        cpuMs: 0,
+        sent: 0,
+      })),
+    );
     setStatus("executando");
-    send({
-      type: "start",
-      circuit,
-      config: { ...DEFAULT_CONFIG, weights, seed },
-      budget,
-      ...(fromSnapshot ? { snapshot: fromSnapshot } : {}),
+    pool.forEach((worker, index) =>
+      worker.postMessage({
+        type: "start",
+        circuit,
+        config: { ...DEFAULT_CONFIG, weights, seed: hubSeed + index * 1009 },
+        budget,
+        ...(index === 0 && fromSnapshot ? { snapshot: fromSnapshot } : {}),
+      } satisfies WorkerRequest),
+    );
+  }
+
+  function importExternal(text: string): boolean {
+    const result = parseExternalResult(text);
+    if (!result) return false;
+    const snap = latest.current;
+    if (!snap)
+      throw new Error("Carregue ou inicie a execução de origem antes de importar o resultado.");
+    if (result.originalHash !== circuitHash(snap.original)) {
+      throw new Error("O resultado pertence a outro circuito original.");
+    }
+    const origin = `${result.environment} (notebook)`;
+    const candidates = result.candidates.map((c) => {
+      const circuit = parseCircuit(c.qasm, "resultado.qasm");
+      return { circuit, lineage: [], origin };
     });
+    if (status === "executando") {
+      sendHub({ type: "import", candidates });
+      setMessage(
+        `${candidates.length} candidatos de ${origin} enviados ao hub para nova verificação.`,
+      );
+      return true;
+    }
+    const engine = QaieEngine.restore(snap);
+    const outcomes = candidates.map((c) => engine.importCandidate(c.circuit, origin));
+    const next = engine.snapshot();
+    latest.current = next;
+    setSnapshot(next);
+    void persist(next, true);
+    setMessage(
+      `${origin}: ${outcomes.filter((o) => o.accepted).length} de ${outcomes.length} candidatos aceitos após verificação no navegador${outcomes.some((o) => o.newBest) ? "; novo melhor global" : ""}.`,
+    );
+    return true;
+  }
+
+  async function exportCheckpoint() {
+    const snap = latest.current;
+    if (!snap) return;
+    const checkpoint = await createCheckpoint(snap, "navegador");
+    download(
+      `qaie-${snap.iteration}.checkpoint.json`,
+      JSON.stringify(checkpoint),
+      "application/json",
+    );
+  }
+
+  async function exportPackage() {
+    const snap = latest.current;
+    if (!snap) return;
+    const checkpoint = await createCheckpoint(snap, "navegador");
+    const manifest = {
+      format: "qaie-package",
+      version: 1,
+      createdAt: checkpoint.createdAt,
+      engine: ENGINE_VERSION,
+      run: runName,
+      iteration: snap.iteration,
+      seed: snap.config.seed,
+      checkpointHash: checkpoint.integrity.hash,
+      files: ["qaie-experimento.ipynb", "qaie.checkpoint.json"],
+      targets: ["kaggle", "colab", "jupyter", "mac"],
+      requirements: ["python>=3.9", "numpy"],
+      returns: "qaie-result.json",
+    };
+    const zip = createZip([
+      { path: "qaie-experimento.ipynb", content: buildNotebook(snap, runName) },
+      { path: "qaie.checkpoint.json", content: JSON.stringify(checkpoint) },
+      { path: "manifest.json", content: JSON.stringify(manifest, null, 2) },
+    ]);
+    download(`qaie-pacote-${snap.iteration}.zip`, zip as BlobPart, "application/zip");
+    setMessage(
+      "Pacote gerado: abra o .ipynb no Kaggle, Colab ou Jupyter e importe o qaie-result.json aqui.",
+    );
   }
 
   async function onFile(file: File | undefined) {
     if (!file) return;
     if (file.size > MAX_FILE_BYTES) return setError("Arquivo acima de 5 MB.");
     const text = await file.text();
-    if (/\.checkpoint\.json$|qaie.*\.json$/i.test(file.name) && text.includes('"bestId"')) {
+    if (/\.json$/i.test(file.name) && /"(format|bestId)"/.test(text)) {
       try {
-        const snap = JSON.parse(text) as EngineSnapshot;
-        if (snap.version !== 1 || !snap.original) throw new Error("Checkpoint inválido.");
-        setSnapshot(snap);
-        latest.current = snap;
-        setMessage(`Checkpoint importado (iteração ${snap.iteration}). Clique em Continuar.`);
-        runId.current = `run-${Date.now()}`;
-        return;
+        if (importExternal(text)) return;
+        if (text.includes('"bestId"')) {
+          const { snapshot: snap, verified, environment } = await readCheckpoint(text);
+          setSnapshot(snap);
+          latest.current = snap;
+          setStatus("parado");
+          runId.current = `run-${Date.now()}`;
+          setMessage(
+            `Checkpoint importado (iteração ${snap.iteration}${environment ? `, origem ${environment}` : ""}; integridade ${verified ? "SHA-256 confere" : "não verificada: formato antigo"}). Clique em Continuar.`,
+          );
+          return;
+        }
       } catch (e) {
         return setError(e instanceof Error ? e.message : String(e));
       }
@@ -245,6 +433,7 @@ export function QuantumLab() {
       if (canWriteVault()) {
         const count = await writeVault(files);
         setMessage(`${count} notas gravadas no Vault do Obsidian.`);
+        setVaultSyncedAt(Date.now());
       } else {
         download(
           `qaie-obsidian-${Date.now()}.zip`,
@@ -252,6 +441,7 @@ export function QuantumLab() {
           "application/zip",
         );
         setMessage("Navegador sem acesso a pastas: notas baixadas em ZIP para extrair no Vault.");
+        setVaultSyncedAt(Date.now());
       }
     } catch (e) {
       if (e instanceof DOMException && e.name === "AbortError") return;
@@ -327,7 +517,7 @@ export function QuantumLab() {
                 `${preview.circuit?.numQubits} qubits · ${preview.circuit?.gates.length} portas`}
             </span>
             <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-border px-3 py-1 hover:border-primary">
-              <Upload size={14} /> Importar .qasm, .json ou checkpoint
+              <Upload size={14} /> Importar .qasm, .json, checkpoint ou qaie-result.json
               <input
                 type="file"
                 accept=".qasm,.json,.txt"
@@ -420,7 +610,7 @@ export function QuantumLab() {
               <Button
                 variant="outline"
                 className="rounded-full"
-                onClick={() => send({ type: "pause" })}
+                onClick={() => broadcast({ type: "pause" })}
               >
                 <Pause /> Pausar
               </Button>
@@ -430,7 +620,8 @@ export function QuantumLab() {
                 className="rounded-full"
                 onClick={() => {
                   setStatus("executando");
-                  send({ type: "resume", budget });
+                  finished.current = new Set();
+                  broadcast({ type: "resume", budget });
                 }}
               >
                 <Play /> Retomar
@@ -440,7 +631,7 @@ export function QuantumLab() {
               <Button
                 variant="outline"
                 className="rounded-full"
-                onClick={() => send({ type: "stop" })}
+                onClick={() => broadcast({ type: "stop" })}
               >
                 <Square /> Cancelar
               </Button>
@@ -596,7 +787,7 @@ export function QuantumLab() {
                           className="text-xs text-primary underline"
                           onClick={() =>
                             running
-                              ? send({ type: "recover", nodeId: n.id })
+                              ? sendHub({ type: "recover", nodeId: n.id })
                               : setMessage("Inicie ou retome a execução para recuperar gerações.")
                           }
                         >
@@ -692,15 +883,16 @@ export function QuantumLab() {
               <Button
                 variant="outline"
                 className="rounded-full"
-                onClick={() =>
-                  download(
-                    `qaie-${snapshot.iteration}.checkpoint.json`,
-                    JSON.stringify(snapshot),
-                    "application/json",
-                  )
-                }
+                onClick={() => void exportCheckpoint()}
               >
-                <Save /> Checkpoint (.json)
+                <Save /> Checkpoint universal (.json)
+              </Button>
+              <Button
+                variant="outline"
+                className="rounded-full"
+                onClick={() => void exportPackage()}
+              >
+                <ArrowRightLeft /> Transferir: pacote Kaggle/Colab/Jupyter (.zip)
               </Button>
               <Button variant="outline" className="rounded-full" onClick={() => void exportVault()}>
                 <FolderOpen />{" "}
@@ -710,6 +902,22 @@ export function QuantumLab() {
           </Panel>
         </>
       )}
+
+      <DistributedCenter
+        resources={resources}
+        recommendation={
+          preview.circuit
+            ? recommendEnvironment(preview.circuit.numQubits, preview.circuit.gates.length)
+            : undefined
+        }
+        islands={islands}
+        snapshot={snapshot}
+        checkpointCount={checkpoints.length}
+        vaultSyncedAt={vaultSyncedAt}
+        workerCount={workerCount}
+        onWorkerCount={setWorkerCount}
+        running={running}
+      />
 
       {runs.length > 0 && (
         <Panel title="Execuções salvas neste navegador (IndexedDB)">

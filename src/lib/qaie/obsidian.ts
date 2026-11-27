@@ -41,6 +41,7 @@ id: ${node.id}
 geracao: ${node.generation}
 iteracao: ${node.iteration}
 estrategia: "${node.strategy}"
+ambiente: "${node.origin ?? "navegador · worker 0"}"
 custo: ${node.cost.toFixed(6)}
 verificacao: "${node.verification.method}"
 fidelidade: ${node.verification.fidelity.toFixed(12)}

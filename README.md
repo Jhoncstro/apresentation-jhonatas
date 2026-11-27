@@ -58,6 +58,18 @@ A rota `/laboratorio-quantico` otimiza circuitos quânticos inteiramente no nave
 
 Limites: o custo exibido é local e não é pontuação oficial de competição. Não há Python, Qiskit, Cirq, ZX-calculus, QSP/QSVT nem síntese numérica; métodos como CMA-ES, Bayesian Optimization e MCTS ainda não estão implementados. A importação aceita apenas OpenQASM 2 e JSON. Testes em `src/test/qaie.test.ts`.
 
+### DCRE — recursos computacionais distribuídos
+
+A seção _Distributed Computing Center_ do laboratório separa três estados, sem simular conexões:
+
+| Estado            | Ambientes                                                                              | Como funciona                                                                                                                                                                                           |
+| ----------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Conectado         | Web Workers, IndexedDB, GitHub Actions (só testes)                                     | Pool de workers em modelo de ilhas: cada worker usa outra semente; melhorias vão para o hub (worker 0), que as verifica de novo antes de aceitar e devolve o melhor às ilhas                            |
+| Exportação manual | Kaggle, Colab, Jupyter, Mac (Python local)                                             | "Transferir" baixa um ZIP com `.ipynb` (NumPy), checkpoint universal e `manifest.json`; o notebook verifica e simplifica o circuito e grava `qaie-result.json`, que a página importa e verifica de novo |
+| Não implementado  | WebGPU, WASM, Qiskit/Cirq/PyZX, Hugging Face, Google Cloud, Oracle, Azure, AWS, Docker | Apenas listados                                                                                                                                                                                         |
+
+Arquivos: `resources.ts` (detecção de núcleos, memória, WebGPU, WASM e quota; recomendação por tamanho), `checkpoint.ts` (checkpoint universal com hash SHA-256 de JSON canônico e hash do circuito original), `notebook.ts` (pacote `.ipynb` e formato `qaie-result`) e `src/components/distributed-center.tsx`. O orçamento para servidores é R$ 0: nenhum serviço pago é contratado e nenhuma quota é contornada. `src/test/qaie-dcre.test.ts` executa o notebook gerado com Python e NumPy quando estão disponíveis.
+
 ## Limite desta migração
 
 As páginas públicas `/`, `/projetos`, `/sobre` e `/contato` funcionam sem Lovable. A rota `/dashboard` preserva a demonstração de pacientes em memória no navegador.
